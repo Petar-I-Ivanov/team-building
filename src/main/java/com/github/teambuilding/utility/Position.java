@@ -30,6 +30,6 @@ public class Position {
 	public static boolean isPositionInBorders(Position position) {
 		
 		return position.getRow() >= 0 && position.getRow() < Constants.GAMEBOARD_MAX_ROW
-				&& position.getCol() >= 0 && position.getCol() < Constants.GAMEBOARD_MAX_COL;
+			&& position.getCol() >= 0 && position.getCol() < Constants.GAMEBOARD_MAX_COL;
 	}
 }

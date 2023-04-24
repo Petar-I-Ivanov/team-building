@@ -9,7 +9,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 
 import com.github.teambuilding.game.GameService;
-import com.github.teambuilding.input.InputValidator;
+import com.github.teambuilding.validation.Input;
 
 @Path("/game")
 public class TestApi {
@@ -32,8 +32,8 @@ public class TestApi {
 	
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
-	public String[][] makeAction(@Valid InputValidator action) {
-		gameService.makeAction(action.getAction().charAt(0));
+	public String[][] makeAction(@Valid Input input) {
+		gameService.makeAction(input.getCommand().charAt(0));
 		return gameService.getGameboard();
 	}
 }

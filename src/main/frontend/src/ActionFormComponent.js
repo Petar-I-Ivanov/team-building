@@ -8,9 +8,9 @@ export default function ActionFormComponent({ setGameboard }) {
 
         e.preventDefault();
 
-        const actionValue = e.target.action.value;
+        const commandValue = e.target.command.value;
 
-        if (!['w', 'd', 's', 'a', 'f', 'c'].includes(actionValue)) {
+        if (!['w', 'd', 's', 'a', 'f', 'c'].includes(commandValue)) {
             setMessage('Invalid input. Please use from the available commands.');
             return;
           }
@@ -18,21 +18,21 @@ export default function ActionFormComponent({ setGameboard }) {
         await fetch("http://localhost:8080/game", {
             method: 'PUT',
             headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({ action: actionValue })
+            body: JSON.stringify({ command: commandValue })
         })
 
         .then(response => response.json())
         .then(data => setGameboard(data));
 
         setMessage(null);
-        e.target.action.value = "";
+        e.target.command.value = "";
     };
 
     return (
         <div>
             <form onSubmit={submitAction}>
                 <label>Make action:</label>
-                <input type="text" id="action" maxLength="1" />
+                <input type="text" id="command" maxLength="1" />
                 {message && <p>{message}</p>}
                 <input type="submit" value="Submit" />
             </form>
