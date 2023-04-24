@@ -1,0 +1,20 @@
+package com.github.teambuilding.guard;
+
+import com.github.teambuilding.utility.Constants;
+import com.github.teambuilding.utility.Position;
+
+import lombok.Data;
+
+@Data
+public class Guard {
+
+	private String sign;
+	private Position location;
+	private boolean isSleep;
+	
+	public Guard(Position startingLocation) {
+		this.sign = Constants.GUARD;
+		this.location = startingLocation;
+		this.isSleep = false;
+	}
+}
