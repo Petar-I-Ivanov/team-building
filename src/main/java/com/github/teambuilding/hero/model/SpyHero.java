@@ -6,7 +6,7 @@ import com.github.teambuilding.utility.Position;
 public class SpyHero extends Hero {
 
 	public SpyHero() {
-		super("3", new Position(14, 13), 3);
+		super("3", new Position(14, 13));
 	}
 	
 	public boolean passiveAbility(Position fromPosition, Position toPosition) {

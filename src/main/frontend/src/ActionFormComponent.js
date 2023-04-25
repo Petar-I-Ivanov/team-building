@@ -15,15 +15,23 @@ export default function ActionFormComponent({ setGameboard }) {
             return;
           }
 
-        await fetch("http://localhost:8080/game", {
+        const response = await fetch("http://localhost:8080/game", {
             method: 'PUT',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({ command: commandValue })
-        })
+        });
 
-        .then(response => response.json())
-        .then(data => setGameboard(data));
+        const json = await response.json();
 
+ //       .then(response => response.json())
+ //       .then(data => setGameboard(data));
+
+        if (response.status == 200) {
+            setGameboard(json);
+        } else {
+            setMessage(json);
+        }
+        console.log(message);
         setMessage(null);
         e.target.command.value = "";
     };

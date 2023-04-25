@@ -8,7 +8,6 @@ import com.github.teambuilding.utility.RandomGenerator;
 
 public class GuardService {
 
-	private int turnToBeAsleep;
 	private Guard guard;
 	
 	private BuildingService buildingService;
@@ -16,36 +15,29 @@ public class GuardService {
 	
 	public GuardService(BuildingService buildingService, HeroService heroService) {
 		
-		this.heroService = heroService;
 		this.buildingService = buildingService;
+		this.heroService = heroService;
 		
-		generateGuard();
-	}
-	
-	public void generateGuard() {
 		this.guard = new Guard(randomShownLocation());
-		turnToBeAsleep = 0;
 	}
 	
 	public String getSign(Position position) {
 		return (isGuardAtPosition(position)) ? guard.getSign() : null;
 	}
 	
-	public boolean move(int turn) {
+	public void move(int turn) {
 		
 		if (guard.isSleep()) {
 			
-			if (turn - turnToBeAsleep == 4) {
-				generateGuard();
+			if (turn - guard.getTurnToBeAsleep() == 4) {
+				guard = new Guard(randomShownLocation());
 			}
-			
-			return false;
 		}
 		
-		Position newPosition = getNewPositionFromChar(RandomGenerator.getRandomMove());
+		Position newPosition = Position.getPositionBasedOnDirection(this.guard.getLocation(), RandomGenerator.getRandomMove());
 		
-		while (!isPositionInBorders(newPosition) || isPositionNotFree(newPosition)) {
-			newPosition = getNewPositionFromChar(RandomGenerator.getRandomMove());
+		while (isNextPositionNotInBordersOrNotFree(newPosition)) {
+			newPosition = Position.getPositionBasedOnDirection(this.guard.getLocation(), RandomGenerator.getRandomMove());
 		}
 		
 		guard.setLocation(newPosition);
@@ -54,20 +46,15 @@ public class GuardService {
 			
 			if (isShootSuccessful()) {
 				setGuardToSleep(turn);
-				return true;
+				heroService.kill();
 			}
 			
 			setAtCorner();
-			return false;
 		}
-		
-		return false;
 	}
 	
 	public boolean isGuardAtPosition(Position position) {
-		
-	  return guard.getLocation().getRow() == position.getRow() &&
-	         guard.getLocation().getCol() == position.getCol();
+	  return Position.arePositionsEqual(this.guard.getLocation(), position);
 	}
 	
 	public void kill(int turn) {
@@ -85,19 +72,6 @@ public class GuardService {
 		return location;
 	}
 	
-	private Position getNewPositionFromChar(char direction) {
-		
-		Position location = guard.getLocation();
-		
-		return switch (direction) {
-			case Constants.FORWARD_MOVE -> new Position(location.getRow() - 1, location.getCol());
-			case Constants.BACK_MOVE -> new Position(location.getRow() + 1, location.getCol());
-			case Constants.LEFT_MOVE -> new Position(location.getRow(), location.getCol() - 1);
-			case Constants.RIGHT_MOVE -> new Position(location.getRow(), location.getCol() + 1);
-			default -> null;
-		};
-	}
-	
 	private static boolean isShootSuccessful() {
 		return RandomGenerator.twentyFourSidedDice() % 11 == 0;
 	}
@@ -113,18 +87,17 @@ public class GuardService {
 	}
 	
 	private void setGuardToSleep(int turn) {
+		
 		guard.setSleep(true);
 		guard.setLocation(new Position(-1, -1));
-		turnToBeAsleep = turn;
+		guard.setTurnToBeAsleep(turn);
 	}
 	
-	private boolean isPositionInBorders(Position position) {
-		return position.getRow() >= 0 && position.getRow() < Constants.GAMEBOARD_MAX_ROW
-			&& position.getCol() >= 0 && position.getCol() < Constants.GAMEBOARD_MAX_COL;
+	private boolean isNextPositionNotInBordersOrNotFree(Position position) {
+		return !Position.isPositionInBorders(position) || isPositionNotFree(position);
 	}
 	
 	private boolean isPositionNotFree(Position position) {
-		
 		return buildingService.isPositionBuilding(position) || heroService.isPositionHero(position);
 	}
 }

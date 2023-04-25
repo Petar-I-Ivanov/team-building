@@ -2,9 +2,7 @@ package com.github.teambuilding.building.service;
 
 import com.github.teambuilding.building.model.Building;
 import com.github.teambuilding.utility.Position;
-import javax.inject.Singleton;
 
-@Singleton
 public class BuildingService {
 
   private Building[] buildings;

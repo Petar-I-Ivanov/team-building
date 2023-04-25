@@ -1,16 +1,18 @@
 package com.github.teambuilding.hero.service;
 
-import javax.inject.Singleton;
-
 import com.github.teambuilding.bomb.BombService;
+import com.github.teambuilding.building.service.BuildingService;
 import com.github.teambuilding.hero.model.Hero;
 import com.github.teambuilding.hero.model.SaboteurHero;
 import com.github.teambuilding.hero.model.SniperHero;
 import com.github.teambuilding.hero.model.SpyHero;
 import com.github.teambuilding.hero.model.TankHero;
+import com.github.teambuilding.hero.service.helpers.KillHero;
+import com.github.teambuilding.hero.service.helpers.MoveHeroes;
+import com.github.teambuilding.hero.service.helpers.SwapHeroOrder;
+import com.github.teambuilding.utility.Constants;
 import com.github.teambuilding.utility.Position;
 
-@Singleton
 public class HeroService {
 
 	private TankHero tank;
@@ -20,52 +22,10 @@ public class HeroService {
 	
 	private Hero[] order;
 	
-	private BaseHeroService baseHeroService;
-	private MoveHeroService moveHeroService;
-	private KillHeroService killHeroService;
-	private SwapHeroOrderService swapHeroOrderService;
+	private BuildingService buildingService;
+	private BombService bombService;
 	
-	public HeroService() {
-		generateHeroes();
-		generateServices();
-	}
-	
-	public String getSign(Position position) {
-		return baseHeroService.getSign(position);
-	}
-	
-	public void makeAction(char action, BombService bombService) {
-		
-		if (action == 'a' || action == 'w' || action == 'd' || action == 's') {
-			moveHeroService.move(action);
-		}
-		
-		if (action == 'f') {
-			baseHeroService.setExplode(bombService);
-		}
-		
-		if (action == 'c') {
-			swapHeroOrderService.switchOrder('4');
-		}
-	}
-	
-	public boolean isHeroAroundPosition(Position position) {
-		return baseHeroService.isHeroAroundPosition(position);
-	}
-	
-	public boolean isPositionHero(Position position) {
-		return baseHeroService.isPositionHero(position);
-	}
-	
-	public boolean kill() {
-		return killHeroService.kill();
-	}
-	
-	public void killAtPosition(Position position) {
-		killHeroService.killAtPosition(position);
-	}
-	
-	private void generateHeroes() {
+	public HeroService(BuildingService buildingService) {
 		
 		this.tank = new TankHero();
 		this.sniper = new SniperHero();
@@ -78,13 +38,87 @@ public class HeroService {
 		this.order[1] = sniper;
 		this.order[2] = spy;
 		this.order[3] = saboteur;
+		
+		this.buildingService = buildingService;
 	}
 	
-	private void generateServices() {
+	public void setBombService(BombService bombService) {
+		this.bombService = bombService;
+	}
+	
+	public String getSign(Position position) {
 		
-		this.baseHeroService = new BaseHeroService(saboteur, order);
-		this.moveHeroService = new MoveHeroService(spy, order);
-		this.killHeroService = new KillHeroService(tank, sniper, order);
-		this.swapHeroOrderService = new SwapHeroOrderService(order);
+		Hero hero = getHeroByPosition(position);
+		return (hero != null) ? hero.getSign() : null;
+	}
+	
+	public void makeAction(char command, char heroPick) {
+		
+		if (Constants.isCharMovementAction(command)) {
+			MoveHeroes.moveHeroes(order, command, buildingService);
+		}
+		
+		if (Constants.isCharSpecialAbilityAction(command)) {
+			setExplode();
+		}
+		
+		if (Constants.isCharHeroesSwapAction(command)) {
+			SwapHeroOrder.swapHero(heroPick, order);
+		}
+	}
+	
+	public boolean isHeroAroundPosition(Position position) {
+		
+		for (int row = position.getRow() - 1; row <= position.getRow() + 1; row++) {
+			for (int col = position.getCol() - 1; col <= position.getCol() + 1; col++) {
+				if (getHeroByPosition(new Position(row, col)) != null) {
+					return true;
+				}
+			}
+		}
+		
+		return false;
+	}
+	
+	public boolean isPositionHero(Position position) {
+		
+		Hero hero = getHeroByPosition(position);
+		return hero != null;
+	}
+	
+	public void kill() {
+		KillHero.kill(order);
+	}
+	
+	public void killAtPosition(Position position) {
+		KillHero.killAtPosition(order, position);
+	}
+	
+	public boolean isSaboteurKilled() {
+		return !this.saboteur.isAlive();
+	}
+	
+	private Hero getHeroByPosition(Position position) {
+		
+		for (Hero hero : order) {
+			if (Position.arePositionsEqual(hero.getLocation(), position)) {
+				return hero;
+			}
+		}
+
+		return null;
+	}
+	
+	private void setExplode() {
+
+		if (saboteur.isAlive() && !isSaboteurFirstInOrder()) {
+			throw new IllegalArgumentException("Saboteur isn't first to place bombs!");
+		}
+
+		bombService.setBomb(0, this.saboteur.getLocation());
+	}
+	
+	private boolean isSaboteurFirstInOrder() {
+		return this.order[0] == this.saboteur;
 	}
 }

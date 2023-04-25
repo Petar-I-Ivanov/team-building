@@ -14,6 +14,7 @@ public class Bomb {
 	private Position location;
 
 	public Bomb(int turnToPlace, Position location) {
+		
 		this.sign = Constants.BOMB;
 		this.turnToPlace = turnToPlace;
 		this.location = location;
@@ -24,8 +25,6 @@ public class Bomb {
 	}
 	
 	public boolean isPositionBomb(Position position) {
-		
-		return this.location.getRow() == position.getRow() &&
-			   this.location.getCol() == position.getCol();
+		return Position.arePositionsEqual(this.location, position);
 	}
 }

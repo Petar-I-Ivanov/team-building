@@ -10,7 +10,7 @@ import com.github.teambuilding.utility.Position;
 
 public class BombService {
 
-	private List<Bomb> bombsPlaced = new ArrayList<Bomb>();
+	private List<Bomb> bombsPlaced;
 
 	private BuildingService buildingService;
 	private HeroService heroService;
@@ -50,9 +50,10 @@ public class BombService {
 
 		for (Bomb bomb : bombsPlaced) {
 			if (bomb.isBombExploding(turn)) {
+				
 				buildingService.explodePosition(bomb.getLocation());
 				bombToRemove = bomb;
-				killAroundTheExplode(bomb);
+				killAroundTheExplode(bomb, turn);
 				break;
 			}
 		}
@@ -60,7 +61,7 @@ public class BombService {
 		bombsPlaced.remove(bombToRemove);
 	}
 
-	private void killAroundTheExplode(Bomb bomb) {
+	private void killAroundTheExplode(Bomb bomb, int turn) {
 
 		int bombRow = bomb.getLocation().getRow();
 		int bombCol = bomb.getLocation().getCol();
@@ -77,7 +78,7 @@ public class BombService {
 					}
 
 					if (guardService.isGuardAtPosition(position)) {
-						guardService.kill(0);;
+						guardService.kill(turn);
 					}
 				}
 			}

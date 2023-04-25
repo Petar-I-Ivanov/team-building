@@ -33,7 +33,11 @@ public class TestApi {
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	public String[][] makeAction(@Valid Input input) {
-		gameService.makeAction(input.getCommand().charAt(0));
+		
+		char command = input.getCommand().charAt(0);
+		char heroPick = (input.getHeroPick() == null) ? '\0' : input.getHeroPick().charAt(0);
+		
+		gameService.makeAction(command, heroPick);
 		return gameService.getGameboard();
 	}
 }

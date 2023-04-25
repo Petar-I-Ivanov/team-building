@@ -9,13 +9,12 @@ public abstract class Hero {
 
 	protected String sign;
 	protected Position location;
-	protected byte orderPosition;
 	protected boolean isAlive;
 	
-	protected Hero(String sign, Position location, int orderPosition) {
+	protected Hero(String sign, Position location) {
+		
 		this.sign = sign;
 		this.location = location;
-		this.orderPosition = (byte) orderPosition;
-		isAlive = true;
+		this.isAlive = true;
 	}
 }
