@@ -5,56 +5,44 @@ import com.github.teambuilding.utility.Position;
 
 public class BigBuilding extends Building {
 
-	public BigBuilding() {
-		super(Constants.BIG_BUILDING,
-			  Constants.BIG_B_MAX_ROW,
-			  Constants.BIG_B_MAX_COL);
-	}
+  public BigBuilding(Position startingPosition) {
+    super(Constants.BIG_BUILDING, Constants.BIG_B_MAX_ROW, Constants.BIG_B_MAX_COL,
+        startingPosition);
+  }
 
-	/**
-	 * check if position is available for entry from heroes for this object
-	 * if position is in this object's locations it is available
-	 */
-	@Override
-	public boolean isEntryPossible(Position position) {
-		
-		for (Position location : this.locations) {
-			if (arePositionsEqual(location, position)) {
-				return true;
-			}
-		}
-		
-		return false;
-	}
+  @Override
+  public boolean isEntryPossible(Position position) {
 
-	@Override
-	protected boolean isExplodeFatal() {
-		return arePositionsDestroyed();
-	}
-	
-	private boolean arePositionsDestroyed() {
-		
-		int cornersCount = 0;
-		
-		Position[] positionsToCheck = new Position[] {
-				
-				this.locations[0],
-				this.locations[2],
-				
-				this.locations[4],
-				
-				this.locations[6],
-				this.locations[8]
-		};
-		
-		for (Position position : this.explodedPositions) {
-			for (Position positionToCheck : positionsToCheck) {
-				if (arePositionsEqual(position, positionToCheck)) {
-					cornersCount++;
-				}
-			}
-		}
-		
-		return cornersCount == 5;
-	}
+    for (Position location : this.locations) {
+      if (Position.arePositionsEqual(location, position)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  @Override
+  protected boolean isExplodeFatal() {
+
+    int cornersCount = 0;
+
+    Position[] positionsToCheck = new Position[] {
+
+        this.locations[0], this.locations[2],
+
+        this.locations[4],
+
+        this.locations[6], this.locations[8]};
+
+    for (Position position : this.explodedPositions) {
+      for (Position positionToCheck : positionsToCheck) {
+        if (Position.arePositionsEqual(position, positionToCheck)) {
+          cornersCount++;
+        }
+      }
+    }
+
+    return cornersCount == 5;
+  }
 }

@@ -1,60 +1,86 @@
 package com.github.teambuilding.building.service;
 
-import javax.inject.Singleton;
-
-import com.github.teambuilding.building.model.BigBuilding;
-import com.github.teambuilding.building.model.MediumBuilding;
-import com.github.teambuilding.building.model.SmallBuilding;
+import com.github.teambuilding.building.model.Building;
 import com.github.teambuilding.utility.Position;
+import javax.inject.Singleton;
 
 @Singleton
 public class BuildingService {
 
-	private SmallBuilding smallB;
-	private MediumBuilding mediumB;
-	private BigBuilding bigB;
-	
-	private BaseBuildingService baseBuildingService;
-	private GenerateBuildingService generateBuildingService;
-	
-	public BuildingService() {
-		
-		generateBuildingInstances();
-		generateServices();
-		
-		this.generateBuildingService.generateBuildings();
-	}
-	
-	public String getSign(Position position) {
-		return baseBuildingService.getSign(position);
-	}
+  private Building[] buildings;
 
-	public boolean isPositionBuilding(Position position) {
-		return baseBuildingService.isPositionBuilding(position);
-	}
+  public BuildingService() {
 
-	public boolean isEntryPossible(Position position) {
-		return baseBuildingService.isEntryPossible(position);
-	}
+    this.buildings = GenerateBuilding.generate();
 
-	public void explodePosition(Position position) {
-		baseBuildingService.explodePosition(position);
-	}
+    while (buildings == null) {
+      this.buildings = GenerateBuilding.generate();
+    }
+  }
 
-	public boolean areBuildingsDestroyed() {
-		return baseBuildingService.areBuildingsDestroyed();
-	}
-	
-	private void generateBuildingInstances() {
-		
-		this.smallB = new SmallBuilding();
-		this.mediumB = new MediumBuilding();
-		this.bigB = new BigBuilding();
-	}
-	
-	private void generateServices() {
-		
-		this.baseBuildingService = new BaseBuildingService(smallB, mediumB, bigB);
-		this.generateBuildingService = new GenerateBuildingService(smallB, mediumB, bigB);
-	}
+  public String getSign(Position position) {
+
+    Building building = getBuildingByPosition(position);
+
+    if (building != null) {
+      return building.getSign();
+    }
+
+    return null;
+  }
+
+  public boolean isPositionBuilding(Position position) {
+
+    return getBuildingByPosition(position) != null;
+  }
+
+  public boolean isEntryPossible(Position position) {
+
+    for (Building building : this.buildings) {
+      if (building.isEntryPossible(position)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  public void explodePosition(Position position) {
+
+    Building building = getBuildingByPosition(position);
+
+    if (building == null) {
+      return;
+    }
+
+    if (!building.isDestroyed()) {
+      building.addExplode(position);
+    }
+
+    if (building.isDestroyed()) {
+      building.cleansePositions();
+    }
+  }
+
+  public boolean areBuildingsDestroyed() {
+
+    for (Building building : this.buildings) {
+      if (!building.isDestroyed()) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  private Building getBuildingByPosition(Position position) {
+
+    for (Building building : this.buildings) {
+      if (building.isPositionBuilding(position)) {
+        return building;
+      }
+    }
+
+    return null;
+  }
 }
