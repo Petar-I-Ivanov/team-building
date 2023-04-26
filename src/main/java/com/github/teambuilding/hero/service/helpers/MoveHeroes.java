@@ -22,7 +22,7 @@ public class MoveHeroes {
 		newPosition = Position.modifyPositionIfOutOfBorders(newPosition);
 		
 		if (isMovementImpossible(newPosition, buildingService, heroes)) {
-			throw new IllegalArgumentException("This movement is not available");
+			throw new IllegalArgumentException("This movement is not available.");
 		}
 		
 		move(heroes, newPosition);

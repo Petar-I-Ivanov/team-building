@@ -8,64 +8,68 @@ import com.github.teambuilding.utility.Constants;
 import com.github.teambuilding.utility.Position;
 
 public class GamePlay {
-	
-	private int turn;
 
-	private BuildingService buildingService;
-	private HeroService heroService;
-	private GuardService guardService;
-	private BombService bombService;
+  private Game game;
 
-	public GamePlay() {
-		
-		this.turn = 0;
+  private BuildingService buildingService;
+  private HeroService heroService;
+  private GuardService guardService;
+  private BombService bombService;
 
-		this.buildingService = new BuildingService();
-		this.heroService = new HeroService(buildingService);
-		this.guardService = new GuardService(this.buildingService, this.heroService);
-		this.bombService = new BombService(buildingService, heroService, guardService);
-		
-		this.heroService.setBombService(bombService);
-	}
+  public GamePlay() {
 
-	public void makeAction(char command, char heroSign) {
-		
-		heroService.makeAction(command, heroSign);
-		guardService.move(turn);
-		bombService.explode(turn);
-		turn++;
-		
-		if (isGameWon() || isGameLost()) {
-			throw new IllegalArgumentException("You " + isGameWon() + "the game!");
-		}
-	}
+    this.game = new Game();
 
-	public String[][] getGameboard() {
+    this.buildingService = new BuildingService();
+    this.heroService = new HeroService(buildingService);
+    this.guardService = new GuardService(this.buildingService, this.heroService);
+    this.bombService = new BombService(buildingService, heroService, guardService);
 
-		String[][] gameboard = new String[Constants.GAMEBOARD_MAX_ROW][Constants.GAMEBOARD_MAX_COL];
+    this.heroService.setBombService(bombService);
+  }
 
-		for (int row = 0; row < Constants.GAMEBOARD_MAX_ROW; row++) {
-			for (int col = 0; col < Constants.GAMEBOARD_MAX_COL; col++) {
+  public long getGameId() {
+    return this.game.getId();
+  }
 
-				Position position = new Position(row, col);
+  public void makeAction(char command, char heroSign) {
 
-				String sign = heroService.getSign(position);
-				sign = (sign == null) ? buildingService.getSign(position) : sign;
-				sign = (sign == null) ? guardService.getSign(position) : sign;
-				sign = (sign == null) ? bombService.getSign(position) : sign;
-				sign = (sign == null) ? "X" : sign;
-				gameboard[row][col] = sign;
-			}
-		}
+    heroService.makeAction(command, heroSign, game.getTurn());
+    guardService.move(game.getTurn());
+    bombService.explode(game.getTurn());
+    game.setTurn(game.getTurn() + 1);
 
-		return gameboard;
-	}
-	
-	private boolean isGameWon() {
-		return buildingService.areBuildingsDestroyed();
-	}
-	
-	private boolean isGameLost() {
-		return heroService.isSaboteurKilled();
-	}
+    if (isGameWon() || isGameLost()) {
+      throw new IllegalArgumentException("You " + isGameWon() + " the game!");
+    }
+  }
+
+  public String[][] getGameboard() {
+
+    String[][] gameboard = new String[Constants.GAMEBOARD_MAX_ROW][Constants.GAMEBOARD_MAX_COL];
+
+    for (int row = 0; row < Constants.GAMEBOARD_MAX_ROW; row++) {
+      for (int col = 0; col < Constants.GAMEBOARD_MAX_COL; col++) {
+
+        Position position = new Position(row, col);
+
+        String sign = bombService.getSign(position);
+        sign = (sign == null) ? heroService.getSign(position) : sign;
+        sign = (sign == null) ? buildingService.getSign(position) : sign;
+        sign = (sign == null) ? guardService.getSign(position) : sign;
+        sign = (sign == null) ? "X" : sign;
+        gameboard[row][col] = sign;
+      }
+    }
+
+    return gameboard;
+  }
+
+  private boolean isGameWon() {
+    return buildingService.areBuildingsDestroyed();
+  }
+
+  private boolean isGameLost() {
+    return heroService.isSaboteurKilled();
+  }
 }
