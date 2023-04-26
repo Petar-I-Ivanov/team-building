@@ -1,7 +1,9 @@
 import { useState } from "react";
 import RenderAvailableCommandsComponent from "./RenderAvailableCommandsComponent";
 
-export default function ActionFormComponent({ setGameboard }) {
+export default function ActionFormComponent({ game, setGame }) {
+
+    console.log("test " + game.id);
 
     const availableCommands = ['w', 'd', 's', 'a', 'f', 'c'];
     const availableHeroPicks = ['1', '2', '3', '4'];
@@ -29,13 +31,13 @@ export default function ActionFormComponent({ setGameboard }) {
         const response = await fetch("http://localhost:8080/game", {
             method: 'PUT',
             headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({ command: commandValue, heroPick: heroPickValue })
+            body: JSON.stringify({ command: commandValue, heroPick: heroPickValue, gameId: game.id })
         })
 
         const json = await response.json();
 
         if (response.status === 200) {
-            setGameboard(json);
+            setGame(json);
         }
         
         else {

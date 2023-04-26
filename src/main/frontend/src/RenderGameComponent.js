@@ -1,13 +1,13 @@
 import React from 'react';
 
-function RenderGameComponent({ gameboard }) {
+function RenderGameComponent({ game }) {
   return (
     <div>
       <h1>My Game</h1>
-      {gameboard && (
+      {game && (
         <table>
           <tbody>
-            {gameboard.map((row, rowIndex) => (
+            {game.gameboard.map((row, rowIndex) => (
               <tr key={rowIndex}>
                 {row.map((cell, cellIndex) => (
                   <td key={`${rowIndex}-${cellIndex}`}>{cell}</td>

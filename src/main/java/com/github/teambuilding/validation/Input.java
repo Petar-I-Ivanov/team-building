@@ -8,4 +8,5 @@ public class Input {
 
 	private String command;
 	private String heroPick;
+	private Long gameId;
 }

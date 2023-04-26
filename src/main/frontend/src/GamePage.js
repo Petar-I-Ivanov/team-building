@@ -2,11 +2,11 @@ import React from 'react';
 import RenderGameComponent from './RenderGameComponent';
 import ActionFormComponent from './ActionFormComponent';
 
-function GamePage({ gameboard, setGameboard }) {
+function GamePage({ game, setGame }) {
   return (
     <div>
-      <RenderGameComponent gameboard={gameboard} />
-      <ActionFormComponent setGameboard={setGameboard} />
+      <RenderGameComponent game={game} />
+      <ActionFormComponent game={game} setGame={setGame} />
     </div>
   );
 }

@@ -1,12 +1,12 @@
 
-export default function IndexPage({setGameboard}) {
+export default function IndexPage({setGame}) {
 
   const startNewGame = async () => {
     fetch("http://localhost:8080/game", {
         method: 'POST'
     })
     .then(response => response.json())
-    .then(data => setGameboard(data));
+    .then(json => setGame(json));
   };
 
   return (

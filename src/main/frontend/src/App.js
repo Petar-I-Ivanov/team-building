@@ -4,12 +4,19 @@ import GamePage from "./GamePage";
 
 function App() {
 
-  const [gameboard, setGameboard] = useState(null);
+  const [game, setGame] = useState(
+  {
+    id: 0,
+    status: "ONGOING",
+    gameboard: [...Array(15)].map(e => Array(15))
+  });
+
+  console.log(game);
 
   return (
     <div>
-      {!gameboard && <IndexPage setGameboard={setGameboard} />}
-      {gameboard && <GamePage gameboard={gameboard} setGameboard={setGameboard} />}
+      {game.id === 0 && <IndexPage setGame={setGame} />}
+      {game.id !== 0 && <GamePage game={game} setGame={setGame} />}
     </div>
   );
 }

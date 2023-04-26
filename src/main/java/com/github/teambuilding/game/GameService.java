@@ -7,40 +7,44 @@ import javax.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class GameService {
 
-  private List<GamePlay> gamePlays;
+	private List<GamePlay> gamePlays;
 
-  public GameService() {
-    this.gamePlays = new ArrayList<>();
-  }
+	public GameService() {
+		this.gamePlays = new ArrayList<>();
+	}
+	
+	public GamePlay getGame(Long id) {
+		
+		for (GamePlay game : gamePlays) {
+			if (game.getGameId() == id) {
+				return game;
+			}
+		}
+		
+		return null;
+	}
 
-  public String[][] startNewGame() {
+	public GamePlay startNewGame() {
 
-    GamePlay gamePlay = new GamePlay();
-    this.gamePlays.add(gamePlay);
-    return gamePlay.getGameboard();
-  }
+		GamePlay gamePlay = new GamePlay();
+		this.gamePlays.add(gamePlay);
+		return gamePlay;
+	}
 
-  public String[][] getGameboard(Long id) {
+	public GamePlay makeAction(Long id, char command, char heroPick) {
 
-    for (GamePlay gamePlay : gamePlays) {
-      if (gamePlay.getGameId() == id) {
-        return gamePlay.getGameboard();
-      }
-    }
+		for (GamePlay gamePlay : gamePlays) {
+			if (gamePlay.getGameId() == id) {
 
-    return null;
-  }
+				if (GameStatusEnum.ONGOING != gamePlay.getStatus()) {
+					throw new IllegalArgumentException("This game is compleated");
+				}
 
-  public String[][] makeAction(Long id, char command, char heroPick) {
+				gamePlay.makeAction(command, heroPick);
+				return gamePlay;
+			}
+		}
 
-    for (GamePlay gamePlay : gamePlays) {
-      if (gamePlay.getGameId() == id) {
-
-        gamePlay.makeAction(command, heroPick);
-        return gamePlay.getGameboard();
-      }
-    }
-
-    return null;
-  }
+		return null;
+	}
 }

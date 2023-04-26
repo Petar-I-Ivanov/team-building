@@ -9,15 +9,12 @@ public class Game {
 
   private long id;
   private int turn;
-  private boolean isWon;
-  private boolean isLost;
-  private String[][] gameboard;
+  private GameStatusEnum status;
 
   public Game() {
 
     this.id = counter++;
     this.turn = 0;
-    this.isWon = false;
-    this.isLost = false;
+    this.status = GameStatusEnum.ONGOING;
   }
 }
