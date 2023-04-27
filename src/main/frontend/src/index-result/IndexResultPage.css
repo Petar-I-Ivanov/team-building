@@ -1,3 +1,10 @@
+.index-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
 .title {
     font-size: 48px;
     font-weight: bold;

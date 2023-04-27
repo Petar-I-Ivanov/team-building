@@ -1,3 +1,7 @@
+.game-render-container {
+    flex: 1;
+}
+
 .title {
     font-size: 36px;
     font-weight: bold;
@@ -8,15 +12,19 @@
 .table {
     border-collapse: collapse;
     margin-top: 32px;
+    border-spacing: 0;
+    border: none;
+    line-height: 0;
 }
 
 .row {
-    height: 32px;
+    padding: 0;
+    margin: 0;
 }
 
 .col {
-    width: 32px;
-    border: 1px solid black;
+    padding: 0;
+    margin: 0;
     text-align: center;
     font-weight: bold;
 }

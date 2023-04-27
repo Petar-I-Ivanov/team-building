@@ -29,7 +29,7 @@ export default function IndexPage({game, setGame}) {
   };
 
   return (
-    <div>
+    <div className="index-container">
       <h1 className="title">{message}</h1>
       <button className="button" onClick={startNewGame}>Start New Game</button>
       {error && (<p className="error">{error}</p>)}

@@ -32,6 +32,8 @@ public class GuardService {
 			if (turn - guard.getTurnToBeAsleep() == 4) {
 				guard = new Guard(randomShownLocation());
 			}
+			
+			return;
 		}
 		
 		Position newPosition = Position.getPositionBasedOnDirection(this.guard.getLocation(), RandomGenerator.getRandomMove());
@@ -47,6 +49,7 @@ public class GuardService {
 			if (isShootSuccessful()) {
 				setGuardToSleep(turn);
 				heroService.kill();
+				return;
 			}
 			
 			setAtCorner();

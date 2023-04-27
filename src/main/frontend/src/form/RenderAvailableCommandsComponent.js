@@ -8,7 +8,7 @@ const CADescription = [
     'Backward movement',
     'Left movement',
     'Change first hero',
-    'Place bomb (only possible if \'4\' is first in order)'
+    'Place bomb'
 ];
 
 const heroPickAction = ['1', '2', '3', '4'];

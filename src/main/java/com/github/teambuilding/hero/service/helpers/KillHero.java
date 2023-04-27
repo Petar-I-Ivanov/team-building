@@ -16,15 +16,11 @@ public class KillHero {
     TankHero tank = (TankHero) getHeroBySign(heroes, Constants.TANK_HERO);
     SniperHero sniper = (SniperHero) getHeroBySign(heroes, Constants.SNIPER_HERO);
 
-    if (tank == null || sniper == null) {
-      throw new UnexpectedTypeException("Unexpected error orrcured during hero kill.");
-    }
-
-    if (sniper.isAlive() && sniper.passiveAbility()) {
+    if (sniper != null && sniper.passiveAbility()) {
       return heroes;
     }
 
-    if (tank.isAlive()) {
+    if (tank != null) {
       return removeHeroFromOrder(heroes, tank);
     }
 
