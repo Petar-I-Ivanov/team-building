@@ -4,9 +4,7 @@ import "./RenderGame.css";
 function RenderGameComponent({ game }) {
 
   const imageNames = ['X', 'S', 'M', 'BB', 'G', 'B', '1', '2', '3', '4'];
-  const images = imageNames.map(imageName => require('./images/' + imageName + '.jpg'));
-
-  console.log(game.gameboard);
+  const images = imageNames.map(imageName => require('../assets/images/' + imageName + '.jpg'));
 
   return (
     <div className='game-render-container'>
