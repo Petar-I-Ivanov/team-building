@@ -1,6 +1,6 @@
 import React from 'react';
 import RenderGameComponent from './RenderGameComponent';
-import ActionFormComponent from './ActionFormComponent';
+import ActionFormComponent from '../form/ActionFormComponent';
 
 function GamePage({ game, setGame }) {
   return (

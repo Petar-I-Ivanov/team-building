@@ -1,16 +1,16 @@
 import React from 'react';
+import "./RenderGame.css";
 
 function RenderGameComponent({ game }) {
   return (
     <div>
-      <h1>My Game</h1>
       {game && (
-        <table>
+        <table className='table'>
           <tbody>
             {game.gameboard.map((row, rowIndex) => (
-              <tr key={rowIndex}>
-                {row.map((cell, cellIndex) => (
-                  <td key={`${rowIndex}-${cellIndex}`}>{cell}</td>
+              <tr className='row' key={rowIndex}>
+                {row.map((col, colIndex) => (
+                  <td className='col' key={`${rowIndex}-${colIndex}`}>{col}</td>
                 ))}
               </tr>
             ))}

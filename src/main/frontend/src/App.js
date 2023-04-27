@@ -1,6 +1,7 @@
 import { useState } from "react";
-import IndexPage from "./IndexPage";
-import GamePage from "./GamePage";
+import IndexResultPage from "./index-result/IndexResultPage";
+import GamePage from "./game/GamePage";
+import "./App.css";
 
 function App() {
 
@@ -11,14 +12,20 @@ function App() {
     gameboard: [...Array(15)].map(e => Array(15))
   });
 
-  console.log(game);
-
   return (
-    <div>
-      {game.id === 0 && <IndexPage setGame={setGame} />}
-      {game.id !== 0 && <GamePage game={game} setGame={setGame} />}
+    <div className="container">
+      {isGameNullOrNotOngoing(game) && <IndexResultPage game={game} setGame={setGame} />}
+      {isGameNotNullAndOngoing(game) && <GamePage game={game} setGame={setGame} />}
     </div>
   );
+}
+
+function isGameNullOrNotOngoing(game) {
+  return game.id === 0 || game.status !== "ONGOING";
+}
+
+function isGameNotNullAndOngoing(game) {
+  return game.id !== 0 && game.status === "ONGOING";
 }
 
 export default App;

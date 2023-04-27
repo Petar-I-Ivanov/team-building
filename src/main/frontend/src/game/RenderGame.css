@@ -1,0 +1,22 @@
+.title {
+    font-size: 36px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.table {
+    border-collapse: collapse;
+    margin-top: 32px;
+}
+
+.row {
+    height: 32px;
+}
+
+.col {
+    width: 32px;
+    border: 1px solid black;
+    text-align: center;
+    font-weight: bold;
+}

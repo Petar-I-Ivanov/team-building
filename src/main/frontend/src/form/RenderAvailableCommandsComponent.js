@@ -1,4 +1,5 @@
 import React from 'react';
+import "./RenderAvailableCommands.css"
 
 const commandAction = ['w', 'd', 's', 'a', 'c', 'f'];
 const CADescription = [
@@ -24,10 +25,10 @@ function RenderAvailableCommandsComponent({ showHeroPick }) {
     const descriptions = showHeroPick ? HPDescription : CADescription;
 
   return (
-    <ul>
+    <ul className='list'>
         {actions.map((action, i) => (
-            <li key={action}>
-                {action} - {descriptions[i]}
+            <li className='item' key={action}>
+                <span className='action'>{action}</span> - <span className='description'>{descriptions[i]}</span>
             </li>
         ))}
     </ul>
