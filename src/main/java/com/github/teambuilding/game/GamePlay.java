@@ -9,73 +9,78 @@ import com.github.teambuilding.utility.Position;
 
 public class GamePlay {
 
-	private Game game;
+  private Game game;
+  private GameRepository gameRepository;
 
-	private BuildingService buildingService;
-	private HeroService heroService;
-	private GuardService guardService;
-	private BombService bombService;
+  private BuildingService buildingService;
+  private HeroService heroService;
+  private GuardService guardService;
+  private BombService bombService;
 
-	public GamePlay() {
+  public GamePlay(GameRepository gameRepository) {
 
-		this.game = new Game();
+    this.game = new Game();
+    this.gameRepository = gameRepository;
+    gameRepository.save(game);
 
-		this.buildingService = new BuildingService();
-		this.heroService = new HeroService(buildingService);
-		this.guardService = new GuardService(this.buildingService, this.heroService);
-		this.bombService = new BombService(buildingService, heroService, guardService);
+    this.buildingService = new BuildingService();
+    this.heroService = new HeroService(buildingService);
+    this.guardService = new GuardService(this.buildingService, this.heroService);
+    this.bombService = new BombService(buildingService, heroService, guardService);
 
-		this.heroService.setBombService(bombService);
-	}
+    this.heroService.setBombService(bombService);
+  }
 
-	public long getGameId() {
-		return this.game.getId();
-	}
+  public long getGameId() {
+    return this.game.getId();
+  }
 
-	public GameStatusEnum getStatus() {
-		return this.game.getStatus();
-	}
+  public GameStatusEnum getStatus() {
+    return this.game.getStatus();
+  }
 
-	public void makeAction(char command, char heroSign) {
+  public void makeAction(char command, char heroSign) {
 
-		heroService.makeAction(command, heroSign, game.getTurn());
-		guardService.move(game.getTurn());
-		bombService.explode(game.getTurn());
-		game.setTurn(game.getTurn() + 1);
+    heroService.makeAction(command, heroSign, game.getTurn());
+    guardService.move(game.getTurn());
+    bombService.explode(game.getTurn());
+    game.setTurn((short) (game.getTurn() + 1));
 
-		if (isGameWon() || isGameLost()) {
+    if (isGameWon() || isGameLost()) {
 
-			GameStatusEnum newStatus = (isGameWon()) ? GameStatusEnum.WON : GameStatusEnum.LOST;
-			game.setStatus(newStatus);
-		}
-	}
+      GameStatusEnum newStatus = (isGameWon()) ? GameStatusEnum.WON : GameStatusEnum.LOST;
+      game.setStatus(newStatus);
+    }
 
-	public String[][] getGameboard() {
+    gameRepository.save(game);
+  }
 
-		String[][] gameboard = new String[Constants.GAMEBOARD_MAX_ROW][Constants.GAMEBOARD_MAX_COL];
+  public String[][] getGameboard() {
 
-		for (int row = 0; row < Constants.GAMEBOARD_MAX_ROW; row++) {
-			for (int col = 0; col < Constants.GAMEBOARD_MAX_COL; col++) {
+    String[][] gameboard = new String[Constants.GAMEBOARD_MAX_ROW][Constants.GAMEBOARD_MAX_COL];
 
-				Position position = new Position(row, col);
+    for (int row = 0; row < Constants.GAMEBOARD_MAX_ROW; row++) {
+      for (int col = 0; col < Constants.GAMEBOARD_MAX_COL; col++) {
 
-				String sign = bombService.getSign(position);
-				sign = (sign == null) ? heroService.getSign(position) : sign;
-				sign = (sign == null) ? buildingService.getSign(position) : sign;
-				sign = (sign == null) ? guardService.getSign(position) : sign;
-				sign = (sign == null) ? "X" : sign;
-				gameboard[row][col] = sign;
-			}
-		}
+        Position position = new Position(row, col);
 
-		return gameboard;
-	}
+        String sign = bombService.getSign(position);
+        sign = (sign == null) ? heroService.getSign(position) : sign;
+        sign = (sign == null) ? buildingService.getSign(position) : sign;
+        sign = (sign == null) ? guardService.getSign(position) : sign;
+        sign = (sign == null) ? "X" : sign;
+        gameboard[row][col] = sign;
+      }
+    }
 
-	private boolean isGameWon() {
-		return buildingService.areBuildingsDestroyed();
-	}
+    return gameboard;
+  }
 
-	private boolean isGameLost() {
-		return heroService.isSaboteurKilled();
-	}
+  private boolean isGameWon() {
+    return buildingService.areBuildingsDestroyed();
+  }
+
+  private boolean isGameLost() {
+    return heroService.isSaboteurKilled();
+  }
 }

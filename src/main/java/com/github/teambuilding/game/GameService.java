@@ -7,44 +7,46 @@ import javax.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class GameService {
 
-	private List<GamePlay> gamePlays;
+  private List<GamePlay> gamePlays;
+  private GameRepository gameRepository;
 
-	public GameService() {
-		this.gamePlays = new ArrayList<>();
-	}
-	
-	public GamePlay getGame(Long id) {
-		
-		for (GamePlay game : gamePlays) {
-			if (game.getGameId() == id) {
-				return game;
-			}
-		}
-		
-		return null;
-	}
+  public GameService(GameRepository gameRepository) {
+    this.gamePlays = new ArrayList<>();
+    this.gameRepository = gameRepository;
+  }
 
-	public GamePlay startNewGame() {
+  public GamePlay getGame(Long id) {
 
-		GamePlay gamePlay = new GamePlay();
-		this.gamePlays.add(gamePlay);
-		return gamePlay;
-	}
+    for (GamePlay game : gamePlays) {
+      if (game.getGameId() == id) {
+        return game;
+      }
+    }
 
-	public GamePlay makeAction(Long id, char command, char heroPick) {
+    return null;
+  }
 
-		for (GamePlay gamePlay : gamePlays) {
-			if (gamePlay.getGameId() == id) {
+  public GamePlay startNewGame() {
 
-				if (GameStatusEnum.ONGOING != gamePlay.getStatus()) {
-					throw new IllegalArgumentException("This game is compleated");
-				}
+    GamePlay gamePlay = new GamePlay(gameRepository);
+    this.gamePlays.add(gamePlay);
+    return gamePlay;
+  }
 
-				gamePlay.makeAction(command, heroPick);
-				return gamePlay;
-			}
-		}
+  public GamePlay makeAction(Long id, char command, char heroPick) {
 
-		return null;
-	}
+    for (GamePlay gamePlay : gamePlays) {
+      if (gamePlay.getGameId() == id) {
+
+        if (GameStatusEnum.ONGOING != gamePlay.getStatus()) {
+          throw new IllegalArgumentException("This game is compleated");
+        }
+
+        gamePlay.makeAction(command, heroPick);
+        return gamePlay;
+      }
+    }
+
+    return null;
+  }
 }
