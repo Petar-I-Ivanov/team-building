@@ -12,11 +12,11 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 
 @Path("/game")
-public class TestApi {
+public class GameApi {
 
   private MappingService mappingService;
 
-  public TestApi(MappingService mappingService) {
+  public GameApi(MappingService mappingService) {
     this.mappingService = mappingService;
   }
 

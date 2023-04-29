@@ -2,50 +2,52 @@ package com.github.teambuilding.building.service;
 
 import com.github.teambuilding.building.model.Building;
 import com.github.teambuilding.utility.Position;
+import java.util.List;
+import javax.enterprise.context.ApplicationScoped;
 
+@ApplicationScoped
 public class BuildingService {
 
-  private Building[] buildings;
+  private BuildingRepository buildingRepository;
 
-  public BuildingService() {
+  public BuildingService(BuildingRepository buildingRepository) {
+    this.buildingRepository = buildingRepository;
+  }
 
-    this.buildings = GenerateBuilding.generate();
+  public void generateBuildings(Long gameId) {
+
+    List<Building> buildings = GenerateBuilding.generate();
 
     while (buildings == null) {
-      this.buildings = GenerateBuilding.generate();
-    }
-  }
-
-  public String getSign(Position position) {
-
-    Building building = getBuildingByPosition(position);
-
-    if (building != null) {
-      return building.getSign();
+      buildings = GenerateBuilding.generate();
     }
 
-    return null;
-  }
-
-  public boolean isPositionBuilding(Position position) {
-
-    return getBuildingByPosition(position) != null;
-  }
-
-  public boolean isEntryPossible(Position position) {
-
-    for (Building building : this.buildings) {
-      if (building.isEntryPossible(position)) {
-        return true;
-      }
+    for (Building building : buildings) {
+      building.setGameId(gameId);
     }
 
-    return false;
+    buildingRepository.save(buildings);
   }
 
-  public void explodePosition(Position position) {
+  public String getSign(Position position, Long gameId) {
 
-    Building building = getBuildingByPosition(position);
+    Building building = getBuildingByPosition(position, gameId);
+    return (building != null) ? building.getSign() : null;
+  }
+
+  public boolean isPositionBuilding(Position position, Long gameId) {
+    return getBuildingByPosition(position, gameId) != null;
+  }
+
+  public boolean isEntryPossible(Position position, Long gameId) {
+
+    Building building = getBuildingByPosition(position, gameId);
+    return building != null && building.isEntryPossible(position);
+  }
+
+  public void explodePosition(Position position, Long gameId) {
+
+    Building building = getBuildingByPosition(position, gameId);
 
     if (building == null) {
       return;
@@ -60,9 +62,11 @@ public class BuildingService {
     }
   }
 
-  public boolean areBuildingsDestroyed() {
+  public boolean areBuildingsDestroyed(Long gameId) {
 
-    for (Building building : this.buildings) {
+    List<Building> buildings = buildingRepository.getByGameId(gameId);
+
+    for (Building building : buildings) {
       if (!building.isDestroyed()) {
         return false;
       }
@@ -71,14 +75,7 @@ public class BuildingService {
     return true;
   }
 
-  private Building getBuildingByPosition(Position position) {
-
-    for (Building building : this.buildings) {
-      if (building.isPositionBuilding(position)) {
-        return building;
-      }
-    }
-
-    return null;
+  private Building getBuildingByPosition(Position position, Long gameId) {
+    return buildingRepository.getByGameIdAndPosition(gameId, position);
   }
 }

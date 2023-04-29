@@ -2,13 +2,13 @@ package com.github.teambuilding.hero.service.helpers;
 
 import com.github.teambuilding.hero.model.Hero;
 import com.github.teambuilding.utility.Position;
-import javax.validation.UnexpectedTypeException;
+import java.util.List;
 
 public class SwapHeroOrder {
 
   private SwapHeroOrder() {}
 
-  public static void swapHero(char heroSign, Hero[] heroes) {
+  public static void swapHero(char heroSign, List<Hero> heroes) {
 
     Hero hero = getHeroBySign(heroSign, heroes);
 
@@ -16,11 +16,11 @@ public class SwapHeroOrder {
       throw new IllegalArgumentException("Invalid hero sign at swap.");
     }
 
-    if (heroes[0] == hero) {
+    Hero firstHero = heroes.get(0);
+
+    if (firstHero == hero) {
       throw new IllegalArgumentException("Hero is already first.");
     }
-
-    Hero firstHero = heroes[0];
 
     if (!(hero.isAlive() || firstHero.isAlive())) {
       throw new IllegalArgumentException("Used heroes are already dead.");
@@ -30,7 +30,7 @@ public class SwapHeroOrder {
 
   }
 
-  private static Hero getHeroBySign(char heroSign, Hero[] heroes) {
+  private static Hero getHeroBySign(char heroSign, List<Hero> heroes) {
 
     String stringHeroSign = String.valueOf(heroSign);
 
@@ -43,28 +43,15 @@ public class SwapHeroOrder {
     return null;
   }
 
-  private static void swap(Hero heroOne, Hero heroTwo, Hero[] heroes) {
+  private static void swap(Hero heroOne, Hero heroTwo, List<Hero> heroes) {
 
     Position tempPosition = heroOne.getLocation();
-
-    int heroOneIndex = getHeroIndex(heroOne, heroes);
-    int heroTwoIndex = getHeroIndex(heroTwo, heroes);
+    byte tempOrderPosition = heroOne.getOrderPosition();
 
     heroOne.setLocation(heroTwo.getLocation());
     heroTwo.setLocation(tempPosition);
 
-    heroes[heroOneIndex] = heroTwo;
-    heroes[heroTwoIndex] = heroOne;
-  }
-
-  private static int getHeroIndex(Hero hero, Hero[] heroes) {
-
-    for (int i = 0; i < heroes.length; i++) {
-      if (heroes[i] == hero) {
-        return i;
-      }
-    }
-
-    throw new UnexpectedTypeException("Unexpected hero type at hero swap");
+    heroOne.setOrderPosition(heroTwo.getOrderPosition());
+    heroTwo.setOrderPosition(tempOrderPosition);
   }
 }

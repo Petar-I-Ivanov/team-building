@@ -1,20 +1,31 @@
 package com.github.teambuilding.game;
 
-import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import javax.enterprise.context.ApplicationScoped;
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
 @ApplicationScoped
 @Transactional
-public class GameRepository implements PanacheRepository<Game> {
+public class GameRepository // implements PanacheRepository<Game> {
+{
 
-  public void save(Game game) {
+  private EntityManager entityManager;
+
+  public GameRepository(EntityManager entityManager) {
+    this.entityManager = entityManager;
+  }
+
+  public Game findById(Long gameId) {
+    return entityManager.find(Game.class, gameId);
+  }
+
+  public Game save(Game game) {
 
     if (game.getId() != null) {
-      getEntityManager().merge(game);
-      return;
+      return entityManager.merge(game);
     }
 
-    getEntityManager().persist(game);
+    entityManager.persist(game);
+    return game;
   }
 }

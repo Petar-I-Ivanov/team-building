@@ -5,12 +5,14 @@ import com.github.teambuilding.building.model.Building;
 import com.github.teambuilding.building.model.MediumBuilding;
 import com.github.teambuilding.building.model.SmallBuilding;
 import com.github.teambuilding.utility.Position;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GenerateBuilding {
 
   private static byte BETWEEN_BUILDINGS_SPACE = 3;
 
-  public static Building[] generate() {
+  public static List<Building> generate() {
 
     SmallBuilding smallBuilding = getSmallBuilding();
     MediumBuilding mediumBuilding = getMediumBuilding();
@@ -20,7 +22,12 @@ public class GenerateBuilding {
       return null;
     }
 
-    return new Building[] {smallBuilding, mediumBuilding, bigBuilding};
+    List<Building> buildings = new ArrayList<>();
+    buildings.add(smallBuilding);
+    buildings.add(mediumBuilding);
+    buildings.add(bigBuilding);
+
+    return buildings;
   }
 
   private static SmallBuilding getSmallBuilding() {

@@ -12,56 +12,72 @@ import com.github.teambuilding.hero.service.helpers.MoveHeroes;
 import com.github.teambuilding.hero.service.helpers.SwapHeroOrder;
 import com.github.teambuilding.utility.Constants;
 import com.github.teambuilding.utility.Position;
+import java.util.ArrayList;
+import java.util.List;
+import javax.enterprise.context.ApplicationScoped;
 
+@ApplicationScoped
 public class HeroService {
 
-  private Hero[] order;
-
   private BuildingService buildingService;
+  private HeroRepository heroRepository;
   private BombService bombService;
 
-  public HeroService(BuildingService buildingService) {
-
-    this.order = new Hero[4];
-
-    this.order[0] = new TankHero();
-    this.order[1] = new SniperHero();
-    this.order[2] = new SpyHero();
-    this.order[3] = new SaboteurHero();
-
+  public HeroService(BuildingService buildingService, HeroRepository heroRepository) {
     this.buildingService = buildingService;
+    this.heroRepository = heroRepository;
   }
 
   public void setBombService(BombService bombService) {
     this.bombService = bombService;
   }
 
-  public String getSign(Position position) {
+  public void generateHeroes(Long gameId) {
 
-    Hero hero = getHeroByPosition(position);
+    List<Hero> heroes = new ArrayList<>();
+
+    heroes.add(new TankHero());
+    heroes.add(new SniperHero());
+    heroes.add(new SpyHero());
+    heroes.add(new SaboteurHero());
+
+    for (Hero hero : heroes) {
+      hero.setGameId(gameId);
+    }
+
+    heroRepository.save(heroes);
+  }
+
+  public String getSign(Position position, Long gameId) {
+
+    Hero hero = heroRepository.findByGameIdAndPosition(gameId, position);
     return (hero != null) ? hero.getSign() : null;
   }
 
-  public void makeAction(char command, char heroPick, int turn) {
+  public void makeAction(char command, char heroPick, int turn, Long gameId) {
+
+    List<Hero> heroes = heroRepository.findByGameId(gameId);
 
     if (Constants.isCharMovementAction(command)) {
-      MoveHeroes.moveHeroes(order, command, buildingService);
+      MoveHeroes.moveHeroes(heroes, command, buildingService);
     }
 
     if (Constants.isCharSpecialAbilityAction(command)) {
-      setExplode(turn);
+      setExplode(turn, gameId);
     }
 
     if (Constants.isCharHeroesSwapAction(command)) {
-      SwapHeroOrder.swapHero(heroPick, order);
+      SwapHeroOrder.swapHero(heroPick, heroes);
     }
+
+    heroRepository.save(heroes);
   }
 
-  public boolean isHeroAroundPosition(Position position) {
+  public boolean isHeroAroundPosition(Position position, Long gameId) {
 
     for (int row = position.getRow() - 1; row <= position.getRow() + 1; row++) {
       for (int col = position.getCol() - 1; col <= position.getCol() + 1; col++) {
-        if (getHeroByPosition(new Position(row, col)) != null) {
+        if (getHeroByPosition(new Position(row, col), gameId) != null) {
           return true;
         }
       }
@@ -70,27 +86,32 @@ public class HeroService {
     return false;
   }
 
-  public boolean isPositionHero(Position position) {
+  public boolean isPositionHero(Position position, Long gameId) {
 
-    Hero hero = getHeroByPosition(position);
+    Hero hero = heroRepository.findByGameIdAndPosition(gameId, position);
     return hero != null;
   }
 
-  public void kill() {
-    this.order = KillHero.kill(order);
+  public void kill(Long gameId) {
+    List<Hero> heroes = KillHero.kill(heroRepository.findByGameId(gameId), heroRepository);
+    heroRepository.save(heroes);
   }
 
-  public void killAtPosition(Position position) {
-    this.order = KillHero.killAtPosition(order, position);
+  public void killAtPosition(Position position, Long gameId) {
+    List<Hero> heroes =
+        KillHero.killAtPosition(heroRepository.findByGameId(gameId), position, heroRepository);
+    heroRepository.save(heroes);
   }
 
-  public boolean isSaboteurKilled() {
-    return getSaboteur() == null;
+  public boolean isSaboteurKilled(Long gameId) {
+    return getSaboteur(gameId) == null;
   }
 
-  private Hero getHeroByPosition(Position position) {
+  private Hero getHeroByPosition(Position position, Long gameId) {
 
-    for (Hero hero : order) {
+    List<Hero> heroes = heroRepository.findByGameId(gameId);
+
+    for (Hero hero : heroes) {
       if (Position.arePositionsEqual(hero.getLocation(), position)) {
         return hero;
       }
@@ -99,24 +120,22 @@ public class HeroService {
     return null;
   }
 
-  private void setExplode(int turn) {
+  private void setExplode(int turn, Long gameId) {
 
-    SaboteurHero saboteur = getSaboteur();
+    SaboteurHero saboteur = getSaboteur(gameId);
 
-    if (saboteur != null && saboteur.isAlive() && !isSaboteurFirstInOrder()) {
+    if (saboteur != null && saboteur.isAlive() && saboteur.getOrderPosition() == 1) {
       throw new IllegalArgumentException("Saboteur isn't first to place bombs!");
     }
 
-    bombService.setBomb(turn, saboteur.getLocation());
+    bombService.setBomb(turn, saboteur.getLocation(), gameId);
   }
 
-  private boolean isSaboteurFirstInOrder() {
-    return this.order[0].getSign() == Constants.SABOTEUR_HERO;
-  }
+  private SaboteurHero getSaboteur(Long gameId) {
 
-  private SaboteurHero getSaboteur() {
+    List<Hero> heroes = heroRepository.findByGameId(gameId);
 
-    for (Hero hero : order) {
+    for (Hero hero : heroes) {
       if (hero.getSign().equals(Constants.SABOTEUR_HERO)) {
         return (SaboteurHero) hero;
       }

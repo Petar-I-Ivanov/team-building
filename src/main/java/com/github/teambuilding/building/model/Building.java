@@ -12,9 +12,11 @@ public abstract class Building {
   protected final int HEIGHT;
   protected final int WIDTH;
 
+  protected Long id;
   protected String sign;
   protected Position[] locations;
   protected List<Position> explodedPositions;
+  protected Long gameId;
 
   protected boolean isDestroyed;
 

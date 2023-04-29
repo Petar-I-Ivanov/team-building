@@ -4,61 +4,57 @@ import com.github.teambuilding.building.service.BuildingService;
 import com.github.teambuilding.guard.GuardService;
 import com.github.teambuilding.hero.service.HeroService;
 import com.github.teambuilding.utility.Position;
-import java.util.ArrayList;
 import java.util.List;
+import javax.enterprise.context.ApplicationScoped;
 
+@ApplicationScoped
 public class BombService {
 
-  private List<Bomb> bombsPlaced;
+  private BombRepository bombRepository;
 
   private BuildingService buildingService;
   private HeroService heroService;
   private GuardService guardService;
 
   public BombService(BuildingService buildingService, HeroService heroService,
-      GuardService guardService) {
+      GuardService guardService, BombRepository bombRepository) {
 
-    this.bombsPlaced = new ArrayList<Bomb>();
+    this.bombRepository = bombRepository;
 
     this.buildingService = buildingService;
     this.heroService = heroService;
     this.guardService = guardService;
   }
 
-  public void setBomb(int turn, Position position) {
-    bombsPlaced.add(new Bomb(turn, position));
+  public void setBomb(int turn, Position position, Long gameId) {
+
+    Bomb bomb = new Bomb();
+    bomb.setTurnToPlace((byte) turn);
+    bomb.setLocation(position);
+    bomb.setGameId(gameId);
+
+    bombRepository.save(bomb);
   }
 
-  public String getSign(Position position) {
+  public String getSign(Position position, Long gameId) {
 
-    for (Bomb bomb : bombsPlaced) {
-      if (bomb.isPositionBomb(position)) {
-        return bomb.getSign();
-      }
-    }
-
-    return null;
+    Bomb bomb = bombRepository.findByGameIdAndPosition(gameId, position);
+    return (bomb != null) ? bomb.getSign() : null;
   }
 
-  public void explode(int turn) {
+  public void explode(int turn, Long gameId) {
 
-    if (bombsPlaced.isEmpty()) {
-      return;
-    }
+    List<Bomb> gameBombs = bombRepository.findByGameId(gameId);
 
-    Bomb bombToRemove = null;
-
-    for (Bomb bomb : bombsPlaced) {
+    for (Bomb bomb : gameBombs) {
       if (bomb.isBombExploding(turn)) {
 
-        buildingService.explodePosition(bomb.getLocation());
-        bombToRemove = bomb;
+        buildingService.explodePosition(bomb.getLocation(), gameId);
         killAroundTheExplode(bomb, turn);
+        bombRepository.deleteById(bomb.getId());
         break;
       }
     }
-
-    bombsPlaced.remove(bombToRemove);
   }
 
   private void killAroundTheExplode(Bomb bomb, int turn) {
@@ -73,12 +69,12 @@ public class BombService {
 
         if (Position.isPositionInBorders(position)) {
 
-          if (heroService.isPositionHero(position)) {
-            heroService.killAtPosition(position);
+          if (heroService.isPositionHero(position, bomb.getGameId())) {
+            heroService.killAtPosition(position, bomb.getGameId());
           }
 
-          if (guardService.isGuardAtPosition(position)) {
-            guardService.kill(turn);
+          if (guardService.isGuardAtPosition(position, bomb.getGameId())) {
+            guardService.kill(turn, bomb.getGameId());
           }
         }
       }

@@ -7,23 +7,37 @@ import lombok.Data;
 @Data
 public class Bomb {
 
+  private Long id;
+
   private String sign;
 
-  private int turnToPlace;
-  private Position location;
+  private short turnToPlace;
 
-  public Bomb(int turnToPlace, Position location) {
+  private byte rowLocation;
+  private byte colLocation;
+
+  private Long gameId;
+
+  public Bomb() {
 
     this.sign = Constants.BOMB;
-    this.turnToPlace = turnToPlace;
-    this.location = location;
+
+    this.turnToPlace = 0;
+    this.rowLocation = 0;
+    this.colLocation = 0;
+    this.gameId = 0L;
+  }
+
+  public Position getLocation() {
+    return new Position(this.rowLocation, this.colLocation);
+  }
+
+  public void setLocation(Position position) {
+    this.rowLocation = (byte) position.getRow();
+    this.colLocation = (byte) position.getCol();
   }
 
   public boolean isBombExploding(int turn) {
     return turn - turnToPlace == 5;
-  }
-
-  public boolean isPositionBomb(Position position) {
-    return Position.arePositionsEqual(this.location, position);
   }
 }
