@@ -6,8 +6,7 @@ import javax.transaction.Transactional;
 
 @ApplicationScoped
 @Transactional
-public class GameRepository // implements PanacheRepository<Game> {
-{
+public class GameRepository {
 
   private EntityManager entityManager;
 

@@ -10,7 +10,6 @@ public abstract class Hero {
   protected String sign;
   protected byte rowLocation;
   protected byte colLocation;
-  protected boolean isAlive;
   protected byte orderPosition;
   protected Long gameId;
 
@@ -19,7 +18,6 @@ public abstract class Hero {
     this.sign = sign;
     this.rowLocation = (byte) location.getRow();
     this.colLocation = (byte) location.getCol();
-    this.isAlive = true;
     this.orderPosition = (byte) orderPosition;
   }
 

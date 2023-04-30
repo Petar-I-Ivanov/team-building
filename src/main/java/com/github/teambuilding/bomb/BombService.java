@@ -10,74 +10,77 @@ import javax.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class BombService {
 
-  private BombRepository bombRepository;
+	private BombRepository bombRepository;
 
-  private BuildingService buildingService;
-  private HeroService heroService;
-  private GuardService guardService;
+	private BuildingService buildingService;
+	private HeroService heroService;
+	private GuardService guardService;
 
-  public BombService(BuildingService buildingService, HeroService heroService,
-      GuardService guardService, BombRepository bombRepository) {
+	public BombService(BombRepository bombRepository, BuildingService buildingService,
+			HeroService heroService, GuardService guardService) {
 
-    this.bombRepository = bombRepository;
+		this.bombRepository = bombRepository;
 
-    this.buildingService = buildingService;
-    this.heroService = heroService;
-    this.guardService = guardService;
-  }
+		this.buildingService = buildingService;
+		this.heroService = heroService;
+		this.guardService = guardService;
+	}
 
-  public void setBomb(int turn, Position position, Long gameId) {
+	public void addBomb(Long gameId, short turn, Position position) {
 
-    Bomb bomb = new Bomb();
-    bomb.setTurnToPlace((byte) turn);
-    bomb.setLocation(position);
-    bomb.setGameId(gameId);
+		Bomb bomb = new Bomb();
 
-    bombRepository.save(bomb);
-  }
+		bomb.setTurnPlaced(turn);
+		bomb.setLocation(position);
+		bomb.setGameId(gameId);
 
-  public String getSign(Position position, Long gameId) {
+		bombRepository.save(bomb);
+	}
 
-    Bomb bomb = bombRepository.findByGameIdAndPosition(gameId, position);
-    return (bomb != null) ? bomb.getSign() : null;
-  }
+	public String getSign(Long gameId, Position position) {
 
-  public void explode(int turn, Long gameId) {
+		Bomb bomb = bombRepository.findByGameIdAndPosition(gameId, position);
+		return (bomb != null) ? bomb.getSign() : null;
+	}
 
-    List<Bomb> gameBombs = bombRepository.findByGameId(gameId);
+	public void explodeCheck(Long gameId, short turn) {
 
-    for (Bomb bomb : gameBombs) {
-      if (bomb.isBombExploding(turn)) {
+		List<Bomb> gameBombs = bombRepository.findByGameId(gameId);
 
-        buildingService.explodePosition(bomb.getLocation(), gameId);
-        killAroundTheExplode(bomb, turn);
-        bombRepository.deleteById(bomb.getId());
-        break;
-      }
-    }
-  }
+		for (Bomb bomb : gameBombs) {
 
-  private void killAroundTheExplode(Bomb bomb, int turn) {
+			if (isBombExploding(bomb, turn)) {
 
-    int bombRow = bomb.getLocation().getRow();
-    int bombCol = bomb.getLocation().getCol();
+				buildingService.explodePosition(bomb.getLocation(), gameId);
+				killAroundTheExplode(bomb, turn);
+				bombRepository.deleteById(bomb.getId());
+				break;
+			}
+		}
+	}
 
-    for (int row = bombRow - 1; row <= bombRow + 1; row++) {
-      for (int col = bombCol - 1; col <= bombCol + 1; col++) {
+	private void killAroundTheExplode(Bomb bomb, short turn) {
 
-        Position position = new Position(row, col);
+		int bombRow = bomb.getRowLocation();
+		int bombCol = bomb.getColLocation();
 
-        if (Position.isPositionInBorders(position)) {
+		for (int row = bombRow - 1; row <= bombRow + 1; row++) {
+			for (int col = bombCol - 1; col <= bombCol + 1; col++) {
 
-          if (heroService.isPositionHero(position, bomb.getGameId())) {
-            heroService.killAtPosition(position, bomb.getGameId());
-          }
+				Position position = new Position(row, col);
 
-          if (guardService.isGuardAtPosition(position, bomb.getGameId())) {
-            guardService.kill(turn, bomb.getGameId());
-          }
-        }
-      }
-    }
-  }
+				if (heroService.isPositionHero(bomb.getGameId(), position)) {
+					heroService.killAtPosition(bomb.getGameId(), position);
+				}
+
+				if (guardService.isGuardAtPosition(bomb.getGameId(), position)) {
+					guardService.kill(bomb.getGameId(), turn);
+				}
+			}
+		}
+	}
+	
+	private static boolean isBombExploding(Bomb bomb, short turn) {
+		return turn - bomb.getTurnPlaced() >= 5;
+	}
 }

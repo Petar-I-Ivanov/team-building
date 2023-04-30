@@ -13,8 +13,6 @@ import lombok.Data;
 @Entity
 public class Game {
 
-  private static Long counter = 1L;
-
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -26,8 +24,6 @@ public class Game {
   private GameStatusEnum status;
 
   public Game() {
-
-    this.id = counter++;
     this.turn = 0;
     this.status = GameStatusEnum.ONGOING;
   }

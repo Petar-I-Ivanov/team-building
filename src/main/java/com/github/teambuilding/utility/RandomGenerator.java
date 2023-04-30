@@ -3,8 +3,10 @@ package com.github.teambuilding.utility;
 import java.util.Random;
 
 public class RandomGenerator {
+	
+	private RandomGenerator() {}
 
-	public static char getRandomMove() {
+	public static char getRandomMoveDirection() {
 		
 		int randomWay = new Random().nextInt(4);
 		

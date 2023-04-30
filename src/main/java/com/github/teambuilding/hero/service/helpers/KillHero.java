@@ -6,65 +6,55 @@ import com.github.teambuilding.hero.model.TankHero;
 import com.github.teambuilding.hero.service.HeroRepository;
 import com.github.teambuilding.utility.Constants;
 import com.github.teambuilding.utility.Position;
-import java.util.ArrayList;
+
 import java.util.List;
-import javax.validation.UnexpectedTypeException;
 
 public class KillHero {
 
-  private KillHero() {}
+	private KillHero() {
+	}
 
-  public static List<Hero> kill(List<Hero> heroes, HeroRepository heroRepository) {
+	public static void kill(Long gameId, HeroRepository heroRepository) {
 
-    TankHero tank = (TankHero) getHeroBySign(heroes, Constants.TANK_HERO);
-    SniperHero sniper = (SniperHero) getHeroBySign(heroes, Constants.SNIPER_HERO);
+		SniperHero sniper = (SniperHero) heroRepository.findByGameIdAndSign(gameId, Constants.SNIPER_HERO);
 
-    if (sniper != null && sniper.passiveAbility()) {
-      return heroes;
-    }
+		if (sniper != null && sniper.passiveAbility()) {
+			return;
+		}
 
-    if (tank != null) {
-      heroRepository.deleteById(tank.getId());
-      return removeHeroFromOrder(heroes, tank);
-    }
+		List<Hero> heroes = heroRepository.findByGameId(gameId);
+		TankHero tank = (TankHero) heroRepository.findByGameIdAndSign(gameId, Constants.TANK_HERO);
 
-    heroRepository.deleteById(heroes.get(0).getId());
-    return removeHeroFromOrder(heroes, heroes.get(0));
-  }
+		Hero heroToRemove = (tank != null) ? tank : heroes.get(0);
+		removeHeroFromOrder(heroes, heroToRemove);
+		heroRepository.deleteById(heroToRemove.getId());
+		heroRepository.save(heroes);
+	}
 
-  public static List<Hero> killAtPosition(List<Hero> heroes, Position position,
-      HeroRepository heroRepository) {
+	public static void killAtPosition(Long gameId, Position position, HeroRepository heroRepository) {
+		
+		List<Hero> heroes = heroRepository.findByGameId(gameId);
 
-    for (Hero hero : heroes) {
-      if (Position.arePositionsEqual(hero.getLocation(), position)) {
-        return removeHeroFromOrder(heroes, hero);
-      }
-    }
+		for (Hero hero : heroes) {
+			if (Position.arePositionsEqual(hero.getLocation(), position)) {
+				removeHeroFromOrder(heroes, hero);
+				heroRepository.deleteById(hero.getId());
+				heroRepository.save(heroes);
+				break;
+			}
+		}
+	}
 
-    throw new UnexpectedTypeException("Shouldn't go so far.");
-  }
+	private static void removeHeroFromOrder(List<Hero> heroes, Hero heroToRemove) {
 
-  private static Hero getHeroBySign(List<Hero> heroes, String heroSign) {
+		byte counter = 1;
 
-    for (Hero hero : heroes) {
-      if (heroSign.equals(hero.getSign())) {
-        return hero;
-      }
-    }
-
-    return null;
-  }
-
-  private static List<Hero> removeHeroFromOrder(List<Hero> heroes, Hero heroToRemove) {
-
-    List<Hero> newOrder = new ArrayList<>();
-
-    for (Hero hero : heroes) {
-      if (hero != heroToRemove) {
-        newOrder.add(hero);
-      }
-    }
-
-    return newOrder;
-  }
+		for (Hero hero : heroes) {
+			if (hero != heroToRemove) {
+				hero.setOrderPosition(counter++);
+			}
+		}
+		
+		heroes.remove(heroToRemove);
+	}
 }

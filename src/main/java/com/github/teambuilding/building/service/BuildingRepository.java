@@ -1,5 +1,6 @@
 package com.github.teambuilding.building.service;
 
+import com.github.teambuilding.bomb.Bomb;
 import com.github.teambuilding.building.model.Building;
 import com.github.teambuilding.utility.Position;
 import java.util.ArrayList;

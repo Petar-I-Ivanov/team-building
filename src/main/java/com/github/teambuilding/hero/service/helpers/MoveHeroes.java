@@ -5,7 +5,6 @@ import com.github.teambuilding.hero.model.Hero;
 import com.github.teambuilding.hero.model.SpyHero;
 import com.github.teambuilding.utility.Constants;
 import com.github.teambuilding.utility.Position;
-import java.util.Comparator;
 import java.util.List;
 
 public class MoveHeroes {
@@ -16,7 +15,7 @@ public class MoveHeroes {
       BuildingService buildingService) {
 
     Position newPosition =
-        Position.getPositionBasedOnDirection(getFirstOrderHero(heroes).getLocation(), direction);
+        Position.getPositionBasedOnDirection(heroes.get(0).getLocation(), direction);
     SpyHero spy = getSpyHero(heroes);
 
     if (isPositionNotInBordersAndUnavailable(newPosition, spy)) {
@@ -44,17 +43,19 @@ public class MoveHeroes {
   }
 
   private static boolean isPositionNotInBordersAndUnavailable(Position position, SpyHero spy) {
-    return !Position.isPositionInBorders(position) && !spy.isAlive();
+    return !Position.isPositionInBorders(position) && spy == null;
   }
 
   private static boolean isMovementImpossible(Position position, BuildingService buildingService,
       List<Hero> heroes) {
+	  
     return isPositionBuildingAndNotEntryPossible(position, buildingService,
         heroes.get(0).getGameId()) || isPositionHero(position, heroes);
   }
 
   private static boolean isPositionBuildingAndNotEntryPossible(Position position,
       BuildingService buildingService, Long gameId) {
+	  
     return buildingService.isPositionBuilding(position, gameId)
         && !buildingService.isEntryPossible(position, gameId);
   }
@@ -72,24 +73,11 @@ public class MoveHeroes {
 
   private static void move(List<Hero> heroes, Position newPosition) {
 
-    heroes.sort(Comparator.comparing(Hero::getOrderPosition));
-
     for (Hero hero : heroes) {
 
       Position tempPosition = hero.getLocation();
       hero.setLocation(newPosition);
       newPosition = tempPosition;
     }
-  }
-
-  private static Hero getFirstOrderHero(List<Hero> heroes) {
-
-    for (Hero hero : heroes) {
-      if (hero.getOrderPosition() == 1) {
-        return hero;
-      }
-    }
-
-    return null;
   }
 }

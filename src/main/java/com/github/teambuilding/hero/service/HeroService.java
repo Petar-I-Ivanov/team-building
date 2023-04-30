@@ -19,128 +19,99 @@ import javax.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class HeroService {
 
-  private BuildingService buildingService;
-  private HeroRepository heroRepository;
-  private BombService bombService;
+	private HeroRepository heroRepository;
 
-  public HeroService(BuildingService buildingService, HeroRepository heroRepository) {
-    this.buildingService = buildingService;
-    this.heroRepository = heroRepository;
-  }
+	private BuildingService buildingService;
+	private BombService bombService;
 
-  public void setBombService(BombService bombService) {
-    this.bombService = bombService;
-  }
+	public HeroService(HeroRepository heroRepository, BuildingService buildingService) {
+		this.heroRepository = heroRepository;
+		this.buildingService = buildingService;
+	}
 
-  public void generateHeroes(Long gameId) {
+	public void setBombService(BombService bombService) {
+		this.bombService = bombService;
+	}
 
-    List<Hero> heroes = new ArrayList<>();
+	public void generateHeroes(Long gameId) {
 
-    heroes.add(new TankHero());
-    heroes.add(new SniperHero());
-    heroes.add(new SpyHero());
-    heroes.add(new SaboteurHero());
+		List<Hero> heroes = new ArrayList<>();
 
-    for (Hero hero : heroes) {
-      hero.setGameId(gameId);
-    }
+		heroes.add(new TankHero());
+		heroes.add(new SniperHero());
+		heroes.add(new SpyHero());
+		heroes.add(new SaboteurHero());
 
-    heroRepository.save(heroes);
-  }
+		for (Hero hero : heroes) {
+			hero.setGameId(gameId);
+		}
 
-  public String getSign(Position position, Long gameId) {
+		heroRepository.save(heroes);
+	}
 
-    Hero hero = heroRepository.findByGameIdAndPosition(gameId, position);
-    return (hero != null) ? hero.getSign() : null;
-  }
+	public String getSign(Long gameId, Position position) {
 
-  public void makeAction(char command, char heroPick, int turn, Long gameId) {
+		Hero hero = heroRepository.findByGameIdAndPosition(gameId, position);
+		return (hero != null) ? hero.getSign() : null;
+	}
 
-    List<Hero> heroes = heroRepository.findByGameId(gameId);
+	public void makeAction(Long gameId, char command, char heroPick, short turn) {
 
-    if (Constants.isCharMovementAction(command)) {
-      MoveHeroes.moveHeroes(heroes, command, buildingService);
-    }
+		List<Hero> heroes = heroRepository.findByGameId(gameId);
 
-    if (Constants.isCharSpecialAbilityAction(command)) {
-      setExplode(turn, gameId);
-    }
+		if (Constants.isCharMovementAction(command)) {
+			MoveHeroes.moveHeroes(heroes, command, buildingService);
+		}
 
-    if (Constants.isCharHeroesSwapAction(command)) {
-      SwapHeroOrder.swapHero(heroPick, heroes);
-    }
+		if (Constants.isCharSpecialAbilityAction(command)) {
+			setExplode(gameId, turn);
+		}
 
-    heroRepository.save(heroes);
-  }
+		if (Constants.isCharHeroesSwapAction(command)) {
+			SwapHeroOrder.swapHero(heroPick, heroes);
+		}
 
-  public boolean isHeroAroundPosition(Position position, Long gameId) {
+		heroRepository.save(heroes);
+	}
 
-    for (int row = position.getRow() - 1; row <= position.getRow() + 1; row++) {
-      for (int col = position.getCol() - 1; col <= position.getCol() + 1; col++) {
-        if (getHeroByPosition(new Position(row, col), gameId) != null) {
-          return true;
-        }
-      }
-    }
+	public void kill(Long gameId) {
+		KillHero.kill(gameId, heroRepository);
+	}
 
-    return false;
-  }
+	public void killAtPosition(Long gameId, Position position) {
+		KillHero.killAtPosition(gameId, position, heroRepository);
+	}
 
-  public boolean isPositionHero(Position position, Long gameId) {
+	public boolean isSaboteurKilled(Long gameId) {
+		return heroRepository.findByGameIdAndSign(gameId, Constants.SABOTEUR_HERO) == null;
+	}
+	
+	public boolean isHeroAroundPosition(Long gameId, Position position) {
 
-    Hero hero = heroRepository.findByGameIdAndPosition(gameId, position);
-    return hero != null;
-  }
+		for (int row = position.getRow() - 1; row <= position.getRow() + 1; row++) {
+			for (int col = position.getCol() - 1; col <= position.getCol() + 1; col++) {
+				if (isPositionHero(gameId, new Position(row, col))) {
+					return true;
+				}
+			}
+		}
 
-  public void kill(Long gameId) {
-    List<Hero> heroes = KillHero.kill(heroRepository.findByGameId(gameId), heroRepository);
-    heroRepository.save(heroes);
-  }
+		return false;
+	}
 
-  public void killAtPosition(Position position, Long gameId) {
-    List<Hero> heroes =
-        KillHero.killAtPosition(heroRepository.findByGameId(gameId), position, heroRepository);
-    heroRepository.save(heroes);
-  }
+	public boolean isPositionHero(Long gameId, Position position) {
+		return heroRepository.findByGameIdAndPosition(gameId, position) != null;
+	}
 
-  public boolean isSaboteurKilled(Long gameId) {
-    return getSaboteur(gameId) == null;
-  }
+	private void setExplode(Long gameId, short turn) {
 
-  private Hero getHeroByPosition(Position position, Long gameId) {
+		SaboteurHero saboteur = (SaboteurHero) heroRepository.findByGameIdAndSign(gameId, Constants.SABOTEUR_HERO);
 
-    List<Hero> heroes = heroRepository.findByGameId(gameId);
-
-    for (Hero hero : heroes) {
-      if (Position.arePositionsEqual(hero.getLocation(), position)) {
-        return hero;
-      }
-    }
-
-    return null;
-  }
-
-  private void setExplode(int turn, Long gameId) {
-
-    SaboteurHero saboteur = getSaboteur(gameId);
-
-    if (saboteur != null && saboteur.isAlive() && saboteur.getOrderPosition() == 1) {
-      throw new IllegalArgumentException("Saboteur isn't first to place bombs!");
-    }
-
-    bombService.setBomb(turn, saboteur.getLocation(), gameId);
-  }
-
-  private SaboteurHero getSaboteur(Long gameId) {
-
-    List<Hero> heroes = heroRepository.findByGameId(gameId);
-
-    for (Hero hero : heroes) {
-      if (hero.getSign().equals(Constants.SABOTEUR_HERO)) {
-        return (SaboteurHero) hero;
-      }
-    }
-
-    return null;
-  }
+		if (saboteur != null && saboteur.getOrderPosition() == 1) {
+			bombService.addBomb(gameId, turn, saboteur.getLocation());
+			return;
+		}
+		
+		throw new IllegalArgumentException("Saboteur isn't first to place bomb!");
+	}
 }

@@ -2,9 +2,10 @@ package com.github.teambuilding.dto;
 
 import com.github.teambuilding.game.Game;
 import com.github.teambuilding.game.GameService;
-import javax.inject.Singleton;
 
-@Singleton
+import javax.enterprise.context.ApplicationScoped;
+
+@ApplicationScoped
 public class MappingService {
 
   private GameService gameService;

@@ -3,6 +3,7 @@ package com.github.teambuilding.hero.service;
 import com.github.teambuilding.hero.model.Hero;
 import com.github.teambuilding.utility.Position;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 
@@ -26,6 +27,7 @@ public class HeroRepository {
       }
     }
 
+    heroesToReturn.sort(Comparator.comparing(Hero::getOrderPosition));
     return heroesToReturn;
   }
 
@@ -39,6 +41,17 @@ public class HeroRepository {
     }
 
     return null;
+  }
+  
+  public Hero findByGameIdAndSign(Long gameId, String sign) {
+	  
+	  for (Hero hero : heroes) {
+		  if (hero.getGameId().equals(gameId) && hero.getSign().equals(sign)) {
+			  return hero;
+		  }
+	  }
+	  
+	  return null;
   }
 
   public void save(Hero hero) {

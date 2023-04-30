@@ -11,7 +11,7 @@ public class Bomb {
 
   private String sign;
 
-  private short turnToPlace;
+  private short turnPlaced;
 
   private byte rowLocation;
   private byte colLocation;
@@ -22,7 +22,7 @@ public class Bomb {
 
     this.sign = Constants.BOMB;
 
-    this.turnToPlace = 0;
+    this.turnPlaced = 0;
     this.rowLocation = 0;
     this.colLocation = 0;
     this.gameId = 0L;
@@ -35,9 +35,5 @@ public class Bomb {
   public void setLocation(Position position) {
     this.rowLocation = (byte) position.getRow();
     this.colLocation = (byte) position.getCol();
-  }
-
-  public boolean isBombExploding(int turn) {
-    return turn - turnToPlace == 5;
   }
 }

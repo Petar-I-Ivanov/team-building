@@ -22,10 +22,6 @@ public class SwapHeroOrder {
       throw new IllegalArgumentException("Hero is already first.");
     }
 
-    if (!(hero.isAlive() || firstHero.isAlive())) {
-      throw new IllegalArgumentException("Used heroes are already dead.");
-    }
-
     swap(hero, firstHero, heroes);
 
   }

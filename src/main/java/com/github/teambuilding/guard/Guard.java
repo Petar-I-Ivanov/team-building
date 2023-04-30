@@ -12,7 +12,7 @@ public class Guard {
   private byte rowLocation;
   private byte colLocation;
   private boolean isSleep;
-  private short turnToBeAsleep;
+  private short turnSetToSleep;
   private Long gameId;
 
   public Guard() {
@@ -20,7 +20,7 @@ public class Guard {
     this.rowLocation = 0;
     this.colLocation = 0;
     this.isSleep = false;
-    this.turnToBeAsleep = 0;
+    this.turnSetToSleep = 0;
   }
 
   public Position getLocation() {

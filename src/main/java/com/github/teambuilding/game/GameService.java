@@ -54,9 +54,9 @@ public class GameService {
       throw new IllegalArgumentException("This game is compleated");
     }
 
-    heroService.makeAction(command, heroPick, game.getTurn(), game.getId());
-    guardService.move(game.getTurn(), game.getId());
-    bombService.explode(game.getTurn(), game.getId());
+    heroService.makeAction(game.getId(), command, heroPick, game.getTurn());
+    bombService.explodeCheck(game.getId(), game.getTurn());
+    guardService.move(game.getId(), game.getTurn());
     game.setTurn((short) (game.getTurn() + 1));
 
     if (isGameWon(gameId) || isGameLost(gameId)) {
@@ -77,10 +77,10 @@ public class GameService {
 
         Position position = new Position(row, col);
 
-        String sign = bombService.getSign(position, gameId);
-        sign = (sign == null) ? heroService.getSign(position, gameId) : sign;
+        String sign = bombService.getSign(gameId, position);
+        sign = (sign == null) ? heroService.getSign(gameId, position) : sign;
         sign = (sign == null) ? buildingService.getSign(position, gameId) : sign;
-        sign = (sign == null) ? guardService.getSign(position, gameId) : sign;
+        sign = (sign == null) ? guardService.getSign(gameId, position) : sign;
         sign = (sign == null) ? "X" : sign;
         gameboard[row][col] = sign;
       }
