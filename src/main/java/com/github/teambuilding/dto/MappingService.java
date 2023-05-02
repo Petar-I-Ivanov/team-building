@@ -31,6 +31,7 @@ public class MappingService {
     GameDto dto = new GameDto();
 
     dto.setId(game.getId());
+    dto.setTurn(game.getTurn());
     dto.setStatus(game.getStatus());
     dto.setGameboard(gameService.getGameboard(game.getId()));
 

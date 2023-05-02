@@ -8,6 +8,7 @@ function App() {
   const [game, setGame] = useState(
   {
     id: 0,
+    turn: 0,
     status: "ONGOING",
     gameboard: [...Array(15)].map(e => Array(15))
   });

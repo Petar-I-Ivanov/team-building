@@ -49,6 +49,7 @@ export default function ActionFormComponent({ game, setGame }) {
 
     return (
         <div className="form-container">
+            <h1>Turn: {game.turn}</h1>
             <RenderAvailableCommandsComponent showHeroPick={showHeroPick} />
             
             <form className="form" onSubmit={submitAction}>

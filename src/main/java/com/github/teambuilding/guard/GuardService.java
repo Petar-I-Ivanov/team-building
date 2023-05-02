@@ -1,6 +1,7 @@
 package com.github.teambuilding.guard;
 
 import com.github.teambuilding.building.service.BuildingService;
+import com.github.teambuilding.game.Game;
 import com.github.teambuilding.hero.service.HeroService;
 import com.github.teambuilding.utility.Position;
 import com.github.teambuilding.utility.RandomGenerator;
@@ -9,118 +10,122 @@ import javax.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class GuardService {
 
-	private GuardRepository guardRepository;
+  private GuardRepository guardRepository;
 
-	private BuildingService buildingService;
-	private HeroService heroService;
+  private BuildingService buildingService;
+  private HeroService heroService;
 
-	public GuardService(GuardRepository guardRepository, BuildingService buildingService, HeroService heroService) {
+  public GuardService(GuardRepository guardRepository, BuildingService buildingService,
+      HeroService heroService) {
 
-		this.guardRepository = guardRepository;
+    this.guardRepository = guardRepository;
 
-		this.buildingService = buildingService;
-		this.heroService = heroService;
-	}
+    this.buildingService = buildingService;
+    this.heroService = heroService;
+  }
 
-	public void generateGuard(Long gameId) {
+  public void generateGuard(Game game) {
 
-		Guard guard = new Guard();
+    Guard guard = new Guard();
 
-		guard.setGameId(gameId);
-		guard.setLocation(getRandomShownLocation(gameId));
+    guard.setGame(game);
+    guard.setLocation(getRandomShownLocation(game.getId()));
 
-		guardRepository.save(guard);
-	}
+    guardRepository.save(guard);
 
-	public String getSign(Long gameId, Position position) {
+    game.setGuard(guard);
+  }
 
-		Guard guard = guardRepository.findByGameIdAndPosition(gameId, position);
-		return (guard != null) ? guard.getSign() : null;
-	}
+  public String getSign(Long gameId, Position position) {
 
-	public void move(Long gameId, short turn) {
+    Guard guard = guardRepository.findByGameIdAndPosition(gameId, position);
+    return (guard != null) ? guard.getSign() : null;
+  }
 
-		Guard guard = guardRepository.findByGameId(gameId);
+  public void move(Long gameId, short turn) {
 
-		if (guard.isSleep()) {
+    Guard guard = guardRepository.findByGameId(gameId);
 
-			if (GuardUtility.isTurnToShowGuard(guard, turn)) {
-				
-				guard.setLocation(getRandomShownLocation(gameId));
-				guard.setSleep(false);
-				guard.setTurnSetToSleep((short) 0);
-				guardRepository.save(guard);
-			}
-			
-			return;
-		}
+    if (guard.isSleep()) {
 
-		guard.setLocation(getNewAvailablePositionToMove(gameId, guard));
-		
-		if (isGuardSeeingHeroes(guard, gameId)) {
-			guardSeeingHeroesAction(guard, gameId, turn);
-		}
-		
-		guardRepository.save(guard);
-	}
+      if (GuardUtility.isTurnToShowGuard(guard, turn)) {
 
-	public void kill(Long gameId, short turn) {
+        guard.setLocation(getRandomShownLocation(gameId));
+        guard.setSleep(false);
+        guard.setTurnSetToSleep((short) 0);
+        guardRepository.save(guard);
+      }
 
-		Guard guard = guardRepository.findByGameId(gameId);
-		GuardUtility.setGuardToSleep(guard, turn);
-		guardRepository.save(guard);
-	}
+      return;
+    }
 
-	public boolean isGuardAtPosition(Long gameId, Position position) {
-		return guardRepository.findByGameIdAndPosition(gameId, position) != null;
-	}
+    guard.setLocation(getNewAvailablePositionToMove(gameId, guard));
 
-	private Position getRandomShownLocation(Long gameId) {
+    if (isGuardSeeingHeroes(guard, gameId)) {
+      guardSeeingHeroesAction(guard, gameId, turn);
+    }
 
-		Position location = new Position();
+    guardRepository.save(guard);
+  }
 
-		while (isNextPositionNotInBordersOrNotFree(gameId, location)) {
-			location = new Position();
-		}
+  public void kill(Long gameId, short turn) {
 
-		return location;
-	}
-	
-	private Position getNewAvailablePositionToMove(Long gameId, Guard guard) {
-		
-		Position newLocation = Position.getPositionBasedOnDirection(guard.getLocation(),
-				RandomGenerator.getRandomMoveDirection());
+    Guard guard = guardRepository.findByGameId(gameId);
+    GuardUtility.setGuardToSleep(guard, turn);
+    guardRepository.save(guard);
+  }
 
-		while (isNextPositionNotInBordersOrNotFree(gameId, newLocation)) {
-			
-			newLocation = Position.getPositionBasedOnDirection(guard.getLocation(),
-					RandomGenerator.getRandomMoveDirection());
-		}
-		
-		return newLocation;
-	}
+  public boolean isGuardAtPosition(Long gameId, Position position) {
+    return guardRepository.findByGameIdAndPosition(gameId, position) != null;
+  }
 
-	private boolean isNextPositionNotInBordersOrNotFree(Long gameId, Position position) {
-		return !Position.isPositionInBorders(position) || isPositionNotFree(gameId, position);
-	}
+  private Position getRandomShownLocation(Long gameId) {
 
-	private boolean isPositionNotFree(Long gameId, Position position) {
-		return buildingService.isPositionBuilding(position, gameId) || heroService.isPositionHero(gameId, position);
-	}
-	
-	private boolean isGuardSeeingHeroes(Guard guard, Long gameId) {
-		return heroService.isHeroAroundPosition(gameId, guard.getLocation());
-	}
-	
-	private void guardSeeingHeroesAction(Guard guard, Long gameId, short turn) {
-		
-		if (GuardUtility.isShootSuccessful()) {
-			
-			heroService.kill(gameId);
-			GuardUtility.setGuardToSleep(guard, turn);
-			return;
-		}
+    Position location = new Position();
 
-		GuardUtility.setAtRandomCorner(guard);
-	}
+    while (isNextPositionNotInBordersOrNotFree(gameId, location)) {
+      location = new Position();
+    }
+
+    return location;
+  }
+
+  private Position getNewAvailablePositionToMove(Long gameId, Guard guard) {
+
+    Position newLocation = Position.getPositionBasedOnDirection(guard.getLocation(),
+        RandomGenerator.getRandomMoveDirection());
+
+    while (isNextPositionNotInBordersOrNotFree(gameId, newLocation)) {
+
+      newLocation = Position.getPositionBasedOnDirection(guard.getLocation(),
+          RandomGenerator.getRandomMoveDirection());
+    }
+
+    return newLocation;
+  }
+
+  private boolean isNextPositionNotInBordersOrNotFree(Long gameId, Position position) {
+    return !Position.isPositionInBorders(position) || isPositionNotFree(gameId, position);
+  }
+
+  private boolean isPositionNotFree(Long gameId, Position position) {
+    return buildingService.isPositionBuilding(position, gameId)
+        || heroService.isPositionHero(gameId, position);
+  }
+
+  private boolean isGuardSeeingHeroes(Guard guard, Long gameId) {
+    return heroService.isHeroAroundPosition(gameId, guard.getLocation());
+  }
+
+  private void guardSeeingHeroesAction(Guard guard, Long gameId, short turn) {
+
+    if (GuardUtility.isShootSuccessful()) {
+
+      heroService.kill(gameId);
+      GuardUtility.setGuardToSleep(guard, turn);
+      return;
+    }
+
+    GuardUtility.setAtRandomCorner(guard);
+  }
 }

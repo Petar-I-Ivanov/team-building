@@ -2,6 +2,7 @@ package com.github.teambuilding.hero.service;
 
 import com.github.teambuilding.bomb.BombService;
 import com.github.teambuilding.building.service.BuildingService;
+import com.github.teambuilding.game.Game;
 import com.github.teambuilding.hero.model.Hero;
 import com.github.teambuilding.hero.model.SaboteurHero;
 import com.github.teambuilding.hero.model.SniperHero;
@@ -19,99 +20,102 @@ import javax.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class HeroService {
 
-	private HeroRepository heroRepository;
+  private HeroRepository heroRepository;
 
-	private BuildingService buildingService;
-	private BombService bombService;
+  private BuildingService buildingService;
+  private BombService bombService;
 
-	public HeroService(HeroRepository heroRepository, BuildingService buildingService) {
-		this.heroRepository = heroRepository;
-		this.buildingService = buildingService;
-	}
+  public HeroService(HeroRepository heroRepository, BuildingService buildingService) {
+    this.heroRepository = heroRepository;
+    this.buildingService = buildingService;
+  }
 
-	public void setBombService(BombService bombService) {
-		this.bombService = bombService;
-	}
+  public void setBombService(BombService bombService) {
+    this.bombService = bombService;
+  }
 
-	public void generateHeroes(Long gameId) {
+  public void generateHeroes(Game game) {
 
-		List<Hero> heroes = new ArrayList<>();
+    List<Hero> heroes = new ArrayList<>();
 
-		heroes.add(new TankHero());
-		heroes.add(new SniperHero());
-		heroes.add(new SpyHero());
-		heroes.add(new SaboteurHero());
+    heroes.add(new TankHero());
+    heroes.add(new SniperHero());
+    heroes.add(new SpyHero());
+    heroes.add(new SaboteurHero());
 
-		for (Hero hero : heroes) {
-			hero.setGameId(gameId);
-		}
+    for (Hero hero : heroes) {
+      hero.setGame(game);
+    }
 
-		heroRepository.save(heroes);
-	}
+    heroRepository.save(heroes);
 
-	public String getSign(Long gameId, Position position) {
+    game.setHeroes(heroes);
+  }
 
-		Hero hero = heroRepository.findByGameIdAndPosition(gameId, position);
-		return (hero != null) ? hero.getSign() : null;
-	}
+  public String getSign(Long gameId, Position position) {
 
-	public void makeAction(Long gameId, char command, char heroPick, short turn) {
+    Hero hero = heroRepository.findByGameIdAndPosition(gameId, position);
+    return (hero != null) ? hero.getSign() : null;
+  }
 
-		List<Hero> heroes = heroRepository.findByGameId(gameId);
+  public void makeAction(Long gameId, char command, char heroPick, short turn) {
 
-		if (Constants.isCharMovementAction(command)) {
-			MoveHeroes.moveHeroes(heroes, command, buildingService);
-		}
+    List<Hero> heroes = heroRepository.findByGameId(gameId);
 
-		if (Constants.isCharSpecialAbilityAction(command)) {
-			setExplode(gameId, turn);
-		}
+    if (Constants.isCharMovementAction(command)) {
+      MoveHeroes.moveHeroes(heroes, command, buildingService);
+    }
 
-		if (Constants.isCharHeroesSwapAction(command)) {
-			SwapHeroOrder.swapHero(heroPick, heroes);
-		}
+    if (Constants.isCharSpecialAbilityAction(command)) {
+      setExplode(gameId, turn);
+    }
 
-		heroRepository.save(heroes);
-	}
+    if (Constants.isCharHeroesSwapAction(command)) {
+      SwapHeroOrder.swapHero(heroPick, heroes);
+    }
 
-	public void kill(Long gameId) {
-		KillHero.kill(gameId, heroRepository);
-	}
+    heroRepository.save(heroes);
+  }
 
-	public void killAtPosition(Long gameId, Position position) {
-		KillHero.killAtPosition(gameId, position, heroRepository);
-	}
+  public void kill(Long gameId) {
+    KillHero.kill(gameId, heroRepository);
+  }
 
-	public boolean isSaboteurKilled(Long gameId) {
-		return heroRepository.findByGameIdAndSign(gameId, Constants.SABOTEUR_HERO) == null;
-	}
-	
-	public boolean isHeroAroundPosition(Long gameId, Position position) {
+  public void killAtPosition(Long gameId, Position position) {
+    KillHero.killAtPosition(gameId, position, heroRepository);
+  }
 
-		for (int row = position.getRow() - 1; row <= position.getRow() + 1; row++) {
-			for (int col = position.getCol() - 1; col <= position.getCol() + 1; col++) {
-				if (isPositionHero(gameId, new Position(row, col))) {
-					return true;
-				}
-			}
-		}
+  public boolean isSaboteurKilled(Long gameId) {
+    return heroRepository.findByGameIdAndSign(gameId, Constants.SABOTEUR_HERO) == null;
+  }
 
-		return false;
-	}
+  public boolean isHeroAroundPosition(Long gameId, Position position) {
 
-	public boolean isPositionHero(Long gameId, Position position) {
-		return heroRepository.findByGameIdAndPosition(gameId, position) != null;
-	}
+    for (int row = position.getRow() - 1; row <= position.getRow() + 1; row++) {
+      for (int col = position.getCol() - 1; col <= position.getCol() + 1; col++) {
+        if (isPositionHero(gameId, new Position(row, col))) {
+          return true;
+        }
+      }
+    }
 
-	private void setExplode(Long gameId, short turn) {
+    return false;
+  }
 
-		SaboteurHero saboteur = (SaboteurHero) heroRepository.findByGameIdAndSign(gameId, Constants.SABOTEUR_HERO);
+  public boolean isPositionHero(Long gameId, Position position) {
+    return heroRepository.findByGameIdAndPosition(gameId, position) != null;
+  }
 
-		if (saboteur != null && saboteur.getOrderPosition() == 1) {
-			bombService.addBomb(gameId, turn, saboteur.getLocation());
-			return;
-		}
-		
-		throw new IllegalArgumentException("Saboteur isn't first to place bomb!");
-	}
+  private void setExplode(Long gameId, short turn) {
+
+    SaboteurHero saboteur =
+        (SaboteurHero) heroRepository.findByGameIdAndSign(gameId, Constants.SABOTEUR_HERO);
+
+    if (saboteur != null && saboteur.getOrderPosition() == 1) {
+      bombService.addBomb(saboteur.getGame(), turn, saboteur.getLocation());
+      return;
+    }
+
+    throw new IllegalArgumentException("Saboteur isn't first to place bomb!");
+  }
 }

@@ -40,8 +40,10 @@ public class GameService {
     Game game = gameRepository.save(new Game());
 
     buildingService.generateBuildings(game.getId());
-    heroService.generateHeroes(game.getId());
-    guardService.generateGuard(game.getId());
+    heroService.generateHeroes(game);
+    guardService.generateGuard(game);
+
+    gameRepository.save(game);
 
     return game;
   }

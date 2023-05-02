@@ -48,14 +48,14 @@ public class MoveHeroes {
 
   private static boolean isMovementImpossible(Position position, BuildingService buildingService,
       List<Hero> heroes) {
-	  
+
     return isPositionBuildingAndNotEntryPossible(position, buildingService,
-        heroes.get(0).getGameId()) || isPositionHero(position, heroes);
+        heroes.get(0).getGame().getId()) || isPositionHero(position, heroes);
   }
 
   private static boolean isPositionBuildingAndNotEntryPossible(Position position,
       BuildingService buildingService, Long gameId) {
-	  
+
     return buildingService.isPositionBuilding(position, gameId)
         && !buildingService.isEntryPossible(position, gameId);
   }

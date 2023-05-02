@@ -2,7 +2,9 @@ package com.github.teambuilding.hero.model;
 
 import com.github.teambuilding.utility.Constants;
 import com.github.teambuilding.utility.Position;
+import javax.persistence.Entity;
 
+@Entity
 public class SpyHero extends Hero {
 
   public SpyHero() {

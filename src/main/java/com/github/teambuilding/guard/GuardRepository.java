@@ -1,63 +1,53 @@
 package com.github.teambuilding.guard;
 
 import com.github.teambuilding.utility.Position;
-import java.util.ArrayList;
-import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
+import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
 
 @ApplicationScoped
+@Transactional
 public class GuardRepository {
 
-  private static Long count = 1L;
-  private List<Guard> guards;
+  private EntityManager entityManager;
 
-  public GuardRepository() {
-    this.guards = new ArrayList<>();
+  public GuardRepository(EntityManager entityManager) {
+    this.entityManager = entityManager;
   }
 
   public Guard findByGameId(Long gameId) {
 
-    for (Guard guard : guards) {
-      if (guard.getGameId().equals(gameId)) {
-        return guard;
-      }
-    }
+    return entityManager.createQuery("SELECT g FROM Guard g WHERE g.game.id = ?1", Guard.class)
+        .setParameter(1, gameId).getSingleResult();
 
-    return null;
   }
 
   public Guard findByGameIdAndPosition(Long gameId, Position position) {
 
-    for (Guard guard : guards) {
-      if (guard.getGameId().equals(gameId)
-          && Position.arePositionsEqual(guard.getLocation(), position)) {
-        return guard;
-      }
+    try {
+
+      return entityManager.createQuery(
+          "SELECT g FROM Guard g WHERE g.game.id = ?1 AND g.rowLocation = ?2 AND g.colLocation = ?3",
+          Guard.class).setParameter(1, gameId).setParameter(2, (byte) position.getRow())
+          .setParameter(3, (byte) position.getCol()).getSingleResult();
     }
 
-    return null;
+    catch (Exception e) {
+      return null;
+    }
   }
 
   public void save(Guard guard) {
 
     if (guard.getId() != null) {
-
-      deleteById(guard.getId());
-      guards.add(guard);
+      entityManager.merge(guard);
       return;
     }
 
-    guard.setId(count++);
-    guards.add(guard);
+    entityManager.persist(guard);
   }
 
-  public void deleteById(Long guardId) {
-
-    for (Guard guard : guards) {
-      if (guard.getId().equals(guardId)) {
-        guards.remove(guard);
-        return;
-      }
-    }
+  public void delete(Guard guard) {
+    entityManager.remove(entityManager.find(Guard.class, guard.getId()));
   }
 }

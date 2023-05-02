@@ -2,7 +2,9 @@ package com.github.teambuilding.hero.model;
 
 import com.github.teambuilding.utility.Position;
 import com.github.teambuilding.utility.RandomGenerator;
+import javax.persistence.Entity;
 
+@Entity
 public class SniperHero extends Hero {
 
   public SniperHero() {

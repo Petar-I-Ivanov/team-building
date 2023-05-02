@@ -2,84 +2,79 @@ package com.github.teambuilding.hero.service;
 
 import com.github.teambuilding.hero.model.Hero;
 import com.github.teambuilding.utility.Position;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
+import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
 
 @ApplicationScoped
+@Transactional
 public class HeroRepository {
 
-  private static Long counter = 1L;
-  private List<Hero> heroes;
+  private EntityManager entityManager;
 
-  public HeroRepository() {
-    this.heroes = new ArrayList<>();
+  public HeroRepository(EntityManager entityManager) {
+    this.entityManager = entityManager;
   }
 
   public List<Hero> findByGameId(Long gameId) {
 
-    List<Hero> heroesToReturn = new ArrayList<>();
+    List<Hero> heroes =
+        entityManager.createQuery("SELECT h FROM Hero h WHERE h.game.id = ?1", Hero.class)
+            .setParameter(1, gameId).getResultList();
 
-    for (Hero hero : heroes) {
-      if (hero.getGameId().equals(gameId)) {
-        heroesToReturn.add(hero);
-      }
-    }
-
-    heroesToReturn.sort(Comparator.comparing(Hero::getOrderPosition));
-    return heroesToReturn;
+    heroes.sort(Comparator.comparing(Hero::getOrderPosition));
+    return heroes;
   }
 
   public Hero findByGameIdAndPosition(Long gameId, Position position) {
 
-    for (Hero hero : heroes) {
-      if (hero.getGameId().equals(gameId)
-          && Position.arePositionsEqual(hero.getLocation(), position)) {
-        return hero;
-      }
+    try {
+
+      return entityManager.createQuery(
+          "SELECT h FROM Hero h WHERE h.game.id = ?1 AND h.rowLocation = ?2 AND h.colLocation = ?3",
+          Hero.class).setParameter(1, gameId).setParameter(2, (byte) position.getRow())
+          .setParameter(3, (byte) position.getCol()).getSingleResult();
     }
 
-    return null;
+    catch (Exception e) {
+      return null;
+    }
   }
-  
+
   public Hero findByGameIdAndSign(Long gameId, String sign) {
-	  
-	  for (Hero hero : heroes) {
-		  if (hero.getGameId().equals(gameId) && hero.getSign().equals(sign)) {
-			  return hero;
-		  }
-	  }
-	  
-	  return null;
+
+    try {
+
+      return entityManager
+          .createQuery("SELECT h FROM Hero h WHERE h.game.id = ?1 AND h.sign = ?2", Hero.class)
+          .setParameter(1, gameId).setParameter(2, sign).getSingleResult();
+    }
+
+    catch (Exception e) {
+      return null;
+    }
   }
 
   public void save(Hero hero) {
 
     if (hero.getId() != null) {
-      deleteById(hero.getId());
-      heroes.add(hero);
+      entityManager.merge(hero);
       return;
     }
 
-    hero.setId(counter++);
-    heroes.add(hero);
+    entityManager.persist(hero);
   }
 
-  public void save(List<Hero> heroesToAdd) {
+  public void save(List<Hero> heroes) {
 
-    for (Hero hero : heroesToAdd) {
+    for (Hero hero : heroes) {
       save(hero);
     }
   }
 
-  public void deleteById(Long heroId) {
-
-    for (Hero hero : heroes) {
-      if (hero.getId().equals(heroId)) {
-        heroes.remove(hero);
-        return;
-      }
-    }
+  public void delete(Hero hero) {
+    entityManager.remove(entityManager.find(Hero.class, hero.getId()));
   }
 }
