@@ -2,7 +2,6 @@ package com.github.teambuilding.dto;
 
 import com.github.teambuilding.game.Game;
 import com.github.teambuilding.game.GameService;
-
 import javax.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped

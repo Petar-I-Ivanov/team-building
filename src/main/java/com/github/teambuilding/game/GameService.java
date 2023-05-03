@@ -39,7 +39,7 @@ public class GameService {
 
     Game game = gameRepository.save(new Game());
 
-    buildingService.generateBuildings(game.getId());
+    buildingService.generateBuildings(game);
     heroService.generateHeroes(game);
     guardService.generateGuard(game);
 

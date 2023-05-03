@@ -1,8 +1,10 @@
 package com.github.teambuilding.game;
 
 import com.github.teambuilding.bomb.Bomb;
+import com.github.teambuilding.building.model.Building;
 import com.github.teambuilding.guard.Guard;
 import com.github.teambuilding.hero.model.Hero;
+import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -30,6 +32,9 @@ public class Game {
   private GameStatusEnum status;
 
   @OneToMany(mappedBy = "game")
+  private List<Building> buildings;
+
+  @OneToMany(mappedBy = "game")
   private List<Hero> heroes;
 
   @OneToOne(mappedBy = "game")
@@ -41,5 +46,6 @@ public class Game {
   public Game() {
     this.turn = 1;
     this.status = GameStatusEnum.ONGOING;
+    this.bombs = new ArrayList<>();
   }
 }

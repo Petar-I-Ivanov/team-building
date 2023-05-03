@@ -1,58 +1,67 @@
 package com.github.teambuilding.building.service;
 
-import com.github.teambuilding.bomb.Bomb;
 import com.github.teambuilding.building.model.Building;
 import com.github.teambuilding.utility.Position;
-import java.util.ArrayList;
 import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
+import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
 
 @ApplicationScoped
+@Transactional
 public class BuildingRepository {
 
-  private static Long count = 1L;
-  private List<Building> buildings;
+  private EntityManager entityManager;
 
-  public BuildingRepository() {
-    buildings = new ArrayList<>();
+  public BuildingRepository(EntityManager entityManager) {
+    this.entityManager = entityManager;
   }
 
   public List<Building> getByGameId(Long gameId) {
 
-    List<Building> buildingsToReturn = new ArrayList<>();
-
-    for (Building building : buildings) {
-      if (building.getGameId().equals(gameId)) {
-        buildingsToReturn.add(building);
-      }
-    }
-
-    return buildingsToReturn;
+    return entityManager
+        .createQuery("SELECT b FROM Building b WHERE b.game.id = ?1", Building.class)
+        .setParameter(1, gameId).getResultList();
   }
 
   public Building getByGameIdAndPosition(Long gameId, Position position) {
 
-    for (Building building : getByGameId(gameId)) {
-      for (Position location : building.getLocations()) {
-        if (Position.arePositionsEqual(location, position)) {
-          return building;
-        }
-      }
+    try {
+
+      return entityManager.createQuery(
+          "SELECT b FROM Building b WHERE b.game.id = ?1 AND b.rowLocation = ?2 AND b.colLocation = ?3",
+          Building.class).setParameter(1, gameId).setParameter(2, (byte) position.getRow())
+          .setParameter(3, (byte) position.getCol()).getSingleResult();
     }
 
-    return null;
+    catch (Exception e) {
+      return null;
+    }
+  }
+
+  public List<Building> getByGameIdAndSign(Long gameId, String sign) {
+
+    try {
+
+      return entityManager
+          .createQuery("SELECT b FROM Building b WHERE b.game.id = ?1 AND b.sign = ?2",
+              Building.class)
+          .setParameter(1, gameId).setParameter(2, sign).getResultList();
+    }
+
+    catch (Exception e) {
+      return null;
+    }
   }
 
   public void save(Building building) {
 
     if (building.getId() != null) {
-      deleteById(building.getId());
-      buildings.add(building);
+      entityManager.merge(building);
       return;
     }
 
-    building.setId(count++);
-    buildings.add(building);
+    entityManager.persist(building);
   }
 
   public void save(List<Building> buildings) {
@@ -62,13 +71,14 @@ public class BuildingRepository {
     }
   }
 
-  public void deleteById(Long buildingId) {
+  public void delete(Building building) {
+    entityManager.remove(entityManager.find(Building.class, building.getId()));
+  }
+
+  public void delete(List<Building> buildings) {
 
     for (Building building : buildings) {
-      if (building.getId().equals(buildingId)) {
-        buildings.remove(building);
-        return;
-      }
+      delete(building);
     }
   }
 }

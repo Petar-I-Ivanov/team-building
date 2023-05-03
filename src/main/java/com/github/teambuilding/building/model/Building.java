@@ -1,86 +1,91 @@
 package com.github.teambuilding.building.model;
 
+import com.github.teambuilding.game.Game;
 import com.github.teambuilding.utility.Constants;
 import com.github.teambuilding.utility.Position;
-import java.util.ArrayList;
-import java.util.List;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Transient;
 import lombok.Data;
 
 @Data
+@Entity
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public abstract class Building {
 
-  protected final int HEIGHT;
-  protected final int WIDTH;
+  @Transient
+  private final byte HEIGHT;
 
+  @Transient
+  private final byte WIDTH;
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   protected Long id;
+
+  @Column(length = 2, nullable = false)
   protected String sign;
-  protected Position[] locations;
-  protected List<Position> explodedPositions;
-  protected Long gameId;
 
-  protected boolean isDestroyed;
+  @Column(name = "row_location", nullable = false)
+  protected byte rowLocation;
 
-  protected Building(String sign, int height, int width, Position startingPosition) {
+  @Column(name = "col_location", nullable = false)
+  protected byte colLocation;
 
+  @Column(name = "is_entry_possible", nullable = false)
+  private boolean isEntryPossible;
+
+  @Column(name = "is_exploded", nullable = false)
+  private boolean isExploded;
+
+  @ManyToOne
+  @JoinColumn(name = "game_id")
+  protected Game game;
+
+  public Building() {
+    this.HEIGHT = 0;
+    this.WIDTH = 0;
+  }
+
+  protected Building(String sign, byte height, byte width) {
     this.sign = sign;
+
     this.HEIGHT = height;
     this.WIDTH = width;
-    this.explodedPositions = new ArrayList<>();
+
+    this.isEntryPossible = true;
+    this.isExploded = false;
+  }
+
+  protected Building(String sign, byte height, byte width, Position startingPosition) {
+    this.sign = sign;
+
+    this.HEIGHT = height;
+    this.WIDTH = width;
+
+    this.isEntryPossible = true;
+    this.isExploded = false;
 
     if (canSetBuilding(startingPosition)) {
-      set(startingPosition);
+      this.rowLocation = (byte) startingPosition.getRow();
+      this.colLocation = (byte) startingPosition.getCol();
     }
   }
 
-  public boolean isBuildingSet() {
-    return this.locations != null;
+  public Position getLocation() {
+    return new Position(this.rowLocation, this.colLocation);
   }
 
-  public Position getStartingPosition() {
-    return this.locations[0];
-  }
-
-  public void cleansePositions() {
-    this.locations = new Position[0];
-  }
-
-  public boolean isPositionBuilding(Position position) {
-
-    for (Position location : this.locations) {
-      if (Position.arePositionsEqual(location, position) && !isPositionExploded(position)) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  public void addExplode(Position position) {
-
-    this.explodedPositions.add(position);
-
-    if (isExplodeFatal()) {
-      this.isDestroyed = true;
-    }
-  }
-
-  public abstract boolean isEntryPossible(Position position);
-
-  protected abstract boolean isExplodeFatal();
-
-  private void set(Position startingPosition) {
-
-    this.locations = new Position[this.HEIGHT * this.WIDTH];
-    int counter = 0;
-
-    for (int row = 0; row < this.HEIGHT; row++) {
-      for (int col = 0; col < this.WIDTH; col++) {
-        this.locations[counter++] =
-            new Position(startingPosition.getRow() + row, startingPosition.getCol() + col);
-      }
-    }
-
-    this.isDestroyed = false;
+  public void setLocation(Position location) {
+    this.rowLocation = (byte) location.getRow();
+    this.colLocation = (byte) location.getCol();
   }
 
   private boolean canSetBuilding(Position position) {
@@ -98,16 +103,5 @@ public abstract class Building {
   private boolean willBuildingNotBeNearHearoes(Position position) {
 
     return !((position.getRow() + this.HEIGHT > 8) && (position.getCol() + this.WIDTH > 4));
-  }
-
-  private boolean isPositionExploded(Position position) {
-
-    for (Position location : this.explodedPositions) {
-      if (Position.arePositionsEqual(location, position)) {
-        return true;
-      }
-    }
-
-    return false;
   }
 }

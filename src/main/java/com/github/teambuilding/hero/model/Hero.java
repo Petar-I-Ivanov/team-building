@@ -4,6 +4,7 @@ import com.github.teambuilding.game.Game;
 import com.github.teambuilding.utility.Position;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -36,7 +37,7 @@ public abstract class Hero {
   @Column(name = "order_position", nullable = false)
   protected byte orderPosition;
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "game_id")
   protected Game game;
 

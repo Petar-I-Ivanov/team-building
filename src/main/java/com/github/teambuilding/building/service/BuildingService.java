@@ -1,6 +1,7 @@
 package com.github.teambuilding.building.service;
 
 import com.github.teambuilding.building.model.Building;
+import com.github.teambuilding.game.Game;
 import com.github.teambuilding.utility.Position;
 import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
@@ -14,35 +15,38 @@ public class BuildingService {
     this.buildingRepository = buildingRepository;
   }
 
-  public void generateBuildings(Long gameId) {
+  public void generateBuildings(Game game) {
 
-    List<Building> buildings = GenerateBuilding.generate();
+    List<Building> buildings = GenerateBuildings.generate();
 
     while (buildings == null) {
-      buildings = GenerateBuilding.generate();
+      buildings = GenerateBuildings.generate();
     }
 
     for (Building building : buildings) {
-      building.setGameId(gameId);
+      building.setGame(game);
     }
 
     buildingRepository.save(buildings);
+    game.setBuildings(buildings);
   }
 
   public String getSign(Position position, Long gameId) {
 
     Building building = getBuildingByPosition(position, gameId);
-    return (building != null) ? building.getSign() : null;
+    return (building != null && !building.isExploded()) ? building.getSign() : null;
   }
 
   public boolean isPositionBuilding(Position position, Long gameId) {
-    return getBuildingByPosition(position, gameId) != null;
+
+    Building building = getBuildingByPosition(position, gameId);
+    return building != null && !building.isExploded();
   }
 
   public boolean isEntryPossible(Position position, Long gameId) {
 
     Building building = getBuildingByPosition(position, gameId);
-    return building != null && building.isEntryPossible(position);
+    return building != null && building.isEntryPossible();
   }
 
   public void explodePosition(Position position, Long gameId) {
@@ -53,26 +57,21 @@ public class BuildingService {
       return;
     }
 
-    if (!building.isDestroyed()) {
-      building.addExplode(position);
-    }
+    building.setExploded(true);
+    buildingRepository.save(building);
 
-    if (building.isDestroyed()) {
-      building.cleansePositions();
+    List<Building> wholeBuilding =
+        buildingRepository.getByGameIdAndSign(gameId, building.getSign());
+
+    if (BuildingDestroyCheck.isBuildingDestroyed(wholeBuilding)) {
+      buildingRepository.delete(wholeBuilding);
     }
   }
 
   public boolean areBuildingsDestroyed(Long gameId) {
 
     List<Building> buildings = buildingRepository.getByGameId(gameId);
-
-    for (Building building : buildings) {
-      if (!building.isDestroyed()) {
-        return false;
-      }
-    }
-
-    return true;
+    return buildings == null || buildings.isEmpty();
   }
 
   private Building getBuildingByPosition(Position position, Long gameId) {

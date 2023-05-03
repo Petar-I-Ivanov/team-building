@@ -28,14 +28,16 @@ public class Constants {
   public static final int GAMEBOARD_MAX_ROW = 15;
   public static final int GAMEBOARD_MAX_COL = 15;
 
-  public static final int SMALL_B_MAX_ROW = 2;
-  public static final int SMALL_B_MAX_COL = 2;
+  public static final byte SMALL_B_MAX_ROW = 2;
+  public static final byte SMALL_B_MAX_COL = 2;
 
-  public static final int MEDIUM_B_MAX_ROW = 2;
-  public static final int MEDIUM_B_MAX_COL = 3;
+  public static final byte MEDIUM_B_MAX_ROW = 2;
+  public static final byte MEDIUM_B_MAX_COL = 3;
 
-  public static final int BIG_B_MAX_ROW = 3;
-  public static final int BIG_B_MAX_COL = 3;
+  public static final byte BIG_B_MAX_ROW = 3;
+  public static final byte BIG_B_MAX_COL = 3;
+
+  public static final byte SPACE_BETWEEN_BUILDINGS = 3;
 
   public static boolean isCharMovementAction(char value) {
 
