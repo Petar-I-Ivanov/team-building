@@ -23,7 +23,7 @@ public class HeroKillService {
     SniperHero sniper =
         (SniperHero) heroRepository.findByGameIdAndSign(gameId, Constants.SNIPER_HERO);
 
-    if (sniper != null && sniper.passiveAbility()) {
+    if (sniper != null && sniper.isShootChanceSuccessful()) {
       return;
     }
 

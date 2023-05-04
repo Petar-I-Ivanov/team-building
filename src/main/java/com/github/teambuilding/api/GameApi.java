@@ -6,7 +6,6 @@ import com.github.teambuilding.dto.MappingService;
 import com.github.teambuilding.validation.Input;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -21,17 +20,6 @@ public class GameApi {
 
   public GameApi(MappingService mappingService) {
     this.mappingService = mappingService;
-  }
-
-  @GET
-  public GameDto testt() {
-    return mappingService.getGame(1L);
-  }
-
-  @GET
-  @Path("/{gameId}")
-  public GameDto test(Long gameId) {
-    return mappingService.getGame(gameId);
   }
 
   @POST

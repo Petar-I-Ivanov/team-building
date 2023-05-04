@@ -1,15 +1,17 @@
-package com.github.teambuilding.services;
+package com.github.teambuilding.services.bomb;
 
 import com.github.teambuilding.models.Bomb;
 import com.github.teambuilding.models.Game;
 import com.github.teambuilding.repositories.BombRepository;
+import com.github.teambuilding.services.building.BuildingService;
+import com.github.teambuilding.services.guard.GuardService;
 import com.github.teambuilding.services.hero.HeroService;
 import com.github.teambuilding.utility.Position;
 import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
-public class BombService {
+public class BombServiceImpl implements BombService {
 
   private BombRepository bombRepository;
 
@@ -17,7 +19,7 @@ public class BombService {
   private HeroService heroService;
   private GuardService guardService;
 
-  public BombService(BombRepository bombRepository, BuildingService buildingService,
+  public BombServiceImpl(BombRepository bombRepository, BuildingService buildingService,
       HeroService heroService, GuardService guardService) {
 
     this.bombRepository = bombRepository;
@@ -27,6 +29,7 @@ public class BombService {
     this.guardService = guardService;
   }
 
+  @Override
   public void addBomb(Game game, short turn, Position position) {
 
     Bomb bomb = new Bomb();
@@ -38,10 +41,12 @@ public class BombService {
     bombRepository.save(bomb);
   }
 
+  @Override
   public List<Bomb> getAllForGameId(Long gameId) {
     return bombRepository.findByGameId(gameId);
   }
 
+  @Override
   public void explodeCheck(Long gameId, short turn) {
 
     List<Bomb> gameBombs = bombRepository.findByGameId(gameId);
@@ -68,7 +73,7 @@ public class BombService {
 
         Position position = new Position(row, col);
 
-        if (heroService.isPositionHero(bomb.getGame().getId(), position)) {
+        if (heroService.isHeroAtPosition(bomb.getGame().getId(), position)) {
           heroService.killAtPosition(bomb.getGame().getId(), position);
         }
 

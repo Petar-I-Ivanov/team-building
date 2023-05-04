@@ -4,8 +4,12 @@ import com.github.teambuilding.models.Game;
 import com.github.teambuilding.models.GameStatusEnum;
 import com.github.teambuilding.models.GameboardObject;
 import com.github.teambuilding.repositories.GameRepository;
-import com.github.teambuilding.services.hero.HeroService;
+import com.github.teambuilding.services.bomb.BombServiceImpl;
+import com.github.teambuilding.services.building.BuildingServiceImpl;
+import com.github.teambuilding.services.guard.GuardServiceImpl;
+import com.github.teambuilding.services.hero.HeroServiceImpl;
 import com.github.teambuilding.utility.Constants;
+import com.github.teambuilding.utility.Position;
 import java.util.ArrayList;
 import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
@@ -15,13 +19,13 @@ public class GameService {
 
   private GameRepository gameRepository;
 
-  private BuildingService buildingService;
-  private HeroService heroService;
-  private GuardService guardService;
-  private BombService bombService;
+  private BuildingServiceImpl buildingService;
+  private HeroServiceImpl heroService;
+  private GuardServiceImpl guardService;
+  private BombServiceImpl bombService;
 
-  public GameService(GameRepository gameRepository, BuildingService buildingService,
-      HeroService heroService, GuardService guardService, BombService bombService) {
+  public GameService(GameRepository gameRepository, BuildingServiceImpl buildingService,
+      HeroServiceImpl heroService, GuardServiceImpl guardService, BombServiceImpl bombService) {
 
     this.gameRepository = gameRepository;
 
@@ -102,7 +106,9 @@ public class GameService {
     List<GameboardObject> objects = fetchAllGameBoardObjects(gameId);
 
     for (GameboardObject object : objects) {
-      gameboard[object.getRowLocation()][object.getColLocation()] = object.getSign();
+      if (Position.isPositionInBorders(object.getLocation())) {
+        gameboard[object.getRowLocation()][object.getColLocation()] = object.getSign();
+      }
     }
   }
 

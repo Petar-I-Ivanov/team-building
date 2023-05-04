@@ -1,4 +1,4 @@
-package com.github.teambuilding.utility.building;
+package com.github.teambuilding.services.building.helpers;
 
 import com.github.teambuilding.models.building.Building;
 import com.github.teambuilding.utility.Constants;

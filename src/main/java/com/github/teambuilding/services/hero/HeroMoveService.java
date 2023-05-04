@@ -3,7 +3,7 @@ package com.github.teambuilding.services.hero;
 import com.github.teambuilding.models.hero.Hero;
 import com.github.teambuilding.models.hero.SpyHero;
 import com.github.teambuilding.repositories.HeroRepository;
-import com.github.teambuilding.services.BuildingService;
+import com.github.teambuilding.services.building.BuildingService;
 import com.github.teambuilding.utility.Constants;
 import com.github.teambuilding.utility.Position;
 import java.util.List;
@@ -28,7 +28,7 @@ public class HeroMoveService {
 
     Position newPosition = Position.getPositionBasedOnDirection(firstInOrderPosition, direction);
 
-    if (isPositionNotInBordersAndUnavailable(gameId, newPosition)) {
+    if (isPositionOverTheWallAndUnavailable(gameId, firstInOrderPosition, newPosition)) {
       throw new IllegalArgumentException("Moving through walls is not available.");
     }
 
@@ -42,10 +42,12 @@ public class HeroMoveService {
     heroRepository.save(heroes);
   }
 
-  private boolean isPositionNotInBordersAndUnavailable(Long gameId, Position position) {
+  private boolean isPositionOverTheWallAndUnavailable(Long gameId, Position fromPosition,
+      Position toPosition) {
 
     SpyHero spy = (SpyHero) heroRepository.findByGameIdAndSign(gameId, Constants.SPY_HERO);
-    return !Position.isPositionInBorders(position) && spy == null;
+    return !Position.isPositionInBorders(toPosition)
+        && !(spy != null && spy.isMovementOverTheWall(fromPosition, toPosition));
   }
 
   private boolean isMovementImpossible(Long gameId, Position position) {

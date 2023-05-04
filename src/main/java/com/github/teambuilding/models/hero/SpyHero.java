@@ -1,21 +1,18 @@
 package com.github.teambuilding.models.hero;
 
+import com.github.teambuilding.models.hero.abilities.SpyPassiveAbility;
 import com.github.teambuilding.utility.Constants;
 import com.github.teambuilding.utility.Position;
 import javax.persistence.Entity;
 
 @Entity
-public class SpyHero extends Hero {
+public class SpyHero extends Hero implements SpyPassiveAbility {
+
+  private static final byte STARTING_ROW = 14;
+  private static final byte STARTING_COL = 13;
+  private static final byte STARTING_ORDER_POSITION = 3;
 
   public SpyHero() {
-    super("3", new Position(14, 13), 3);
-  }
-
-  public boolean passiveAbility(Position fromPosition, Position toPosition) {
-
-    return ((fromPosition.getRow() == 0 && toPosition.getRow() == Constants.GAMEBOARD_MAX_ROW - 1)
-        || (fromPosition.getCol() == 0 && toPosition.getCol() == Constants.GAMEBOARD_MAX_COL - 1)
-        || (fromPosition.getRow() == Constants.GAMEBOARD_MAX_ROW - 1 && toPosition.getRow() == 0)
-        || (fromPosition.getCol() == Constants.GAMEBOARD_MAX_COL - 1 && toPosition.getCol() == 0));
+    super(Constants.SPY_HERO, new Position(STARTING_ROW, STARTING_COL), STARTING_ORDER_POSITION);
   }
 }

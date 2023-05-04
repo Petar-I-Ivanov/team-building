@@ -2,6 +2,8 @@ package com.github.teambuilding.utility;
 
 public class Constants {
 
+  private Constants() {}
+
   // ============== GAMEBOARD SIGNS ================
   public static final String EMPTY_POSITION = "X";
   public static final String SMALL_BUILDING = "S";
