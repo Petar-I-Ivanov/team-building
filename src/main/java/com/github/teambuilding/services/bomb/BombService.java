@@ -12,4 +12,6 @@ public interface BombService {
   List<Bomb> getAllForGameId(Long gameId);
 
   void explodeCheck(Long gameId, short turn);
+
+  void deleteAllWhereGameId(Long gameId);
 }

@@ -15,4 +15,6 @@ public interface GuardService {
   void kill(Long gameId, short turn);
 
   boolean isGuardAtPosition(Long gameId, Position position);
+
+  void deleteAllWhereGameId(Long gameId);
 }

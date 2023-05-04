@@ -19,27 +19,26 @@ public class BuildingRepository {
 
   public List<Building> findByGameId(Long gameId) {
 
-    return entityManager
-        .createQuery("SELECT b FROM Building b WHERE b.game.id = ?1", Building.class)
-        .setParameter(1, gameId).getResultList();
+    String jpql = "SELECT b FROM Building b WHERE b.game.id = ?1";
+    return entityManager.createQuery(jpql, Building.class).setParameter(1, gameId).getResultList();
   }
 
   public List<Building> findByGameIdAndDestroyedFalse(Long gameId) {
 
-    return entityManager
-        .createQuery("SELECT b FROM Building b WHERE b.game.id = ?1 AND b.isExploded = false",
-            Building.class)
-        .setParameter(1, gameId).getResultList();
+    String jpql = "SELECT b FROM Building b WHERE b.game.id = ?1 AND b.isExploded = false";
+    return entityManager.createQuery(jpql, Building.class).setParameter(1, gameId).getResultList();
   }
 
   public Building findByGameIdAndPosition(Long gameId, Position position) {
 
+    String jpql =
+        "SELECT b FROM Building b WHERE b.game.id = ?1 AND b.rowLocation = ?2 AND b.colLocation = ?3";
+
     try {
 
-      return entityManager.createQuery(
-          "SELECT b FROM Building b WHERE b.game.id = ?1 AND b.rowLocation = ?2 AND b.colLocation = ?3",
-          Building.class).setParameter(1, gameId).setParameter(2, (byte) position.getRow())
-          .setParameter(3, (byte) position.getCol()).getSingleResult();
+      return entityManager.createQuery(jpql, Building.class).setParameter(1, gameId)
+          .setParameter(2, (byte) position.getRow()).setParameter(3, (byte) position.getCol())
+          .getSingleResult();
     }
 
     catch (Exception e) {
@@ -49,12 +48,12 @@ public class BuildingRepository {
 
   public List<Building> findByGameIdAndSign(Long gameId, String sign) {
 
+    String jpql = "SELECT b FROM Building b WHERE b.game.id = ?1 AND b.sign = ?2";
+
     try {
 
-      return entityManager
-          .createQuery("SELECT b FROM Building b WHERE b.game.id = ?1 AND b.sign = ?2",
-              Building.class)
-          .setParameter(1, gameId).setParameter(2, sign).getResultList();
+      return entityManager.createQuery(jpql, Building.class).setParameter(1, gameId)
+          .setParameter(2, sign).getResultList();
     }
 
     catch (Exception e) {
@@ -88,5 +87,11 @@ public class BuildingRepository {
     for (Building building : buildings) {
       delete(building);
     }
+  }
+
+  public void deleteWhereGameId(Long gameId) {
+
+    String jpql = "DELETE FROM Building b WHERE b.game.id = ?1";
+    entityManager.createQuery(jpql).setParameter(1, gameId).executeUpdate();
   }
 }

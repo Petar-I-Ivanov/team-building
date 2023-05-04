@@ -1,6 +1,7 @@
 package com.github.teambuilding.dto;
 
 import com.github.teambuilding.models.Game;
+import com.github.teambuilding.models.GameStatusEnum;
 import com.github.teambuilding.services.GameService;
 import javax.enterprise.context.ApplicationScoped;
 
@@ -32,7 +33,10 @@ public class MappingService {
     dto.setId(game.getId());
     dto.setTurn(game.getTurn());
     dto.setStatus(game.getStatus());
-    dto.setGameboard(gameService.getGameboard(game.getId()));
+
+    if (game.getStatus() == GameStatusEnum.ONGOING) {
+      dto.setGameboard(gameService.getGameboard(game.getId()));
+    }
 
     return dto;
   }

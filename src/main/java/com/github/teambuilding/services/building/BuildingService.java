@@ -18,4 +18,6 @@ public interface BuildingService {
   void explodePosition(Position position, Long gameId);
 
   boolean areBuildingsDestroyed(Long gameId);
+
+  void deleteAllWhereGameId(Long gameId);
 }

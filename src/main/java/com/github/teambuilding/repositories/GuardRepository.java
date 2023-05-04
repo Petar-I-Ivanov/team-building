@@ -18,19 +18,21 @@ public class GuardRepository {
 
   public Guard findByGameId(Long gameId) {
 
-    return entityManager.createQuery("SELECT g FROM Guard g WHERE g.game.id = ?1", Guard.class)
-        .setParameter(1, gameId).getSingleResult();
+    String jpql = "SELECT g FROM Guard g WHERE g.game.id = ?1";
+    return entityManager.createQuery(jpql, Guard.class).setParameter(1, gameId).getSingleResult();
 
   }
 
   public Guard findByGameIdAndPosition(Long gameId, Position position) {
 
+    String jpql =
+        "SELECT g FROM Guard g WHERE g.game.id = ?1 AND g.rowLocation = ?2 AND g.colLocation = ?3";
+
     try {
 
-      return entityManager.createQuery(
-          "SELECT g FROM Guard g WHERE g.game.id = ?1 AND g.rowLocation = ?2 AND g.colLocation = ?3",
-          Guard.class).setParameter(1, gameId).setParameter(2, (byte) position.getRow())
-          .setParameter(3, (byte) position.getCol()).getSingleResult();
+      return entityManager.createQuery(jpql, Guard.class).setParameter(1, gameId)
+          .setParameter(2, (byte) position.getRow()).setParameter(3, (byte) position.getCol())
+          .getSingleResult();
     }
 
     catch (Exception e) {
@@ -50,5 +52,11 @@ public class GuardRepository {
 
   public void delete(Guard guard) {
     entityManager.remove(entityManager.find(Guard.class, guard.getId()));
+  }
+
+  public void deleteWhereGameId(Long gameId) {
+
+    String jpql = "DELETE FROM Guard g WHERE g.game.id = ?1";
+    entityManager.createQuery(jpql).setParameter(1, gameId).executeUpdate();
   }
 }

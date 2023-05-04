@@ -20,4 +20,6 @@ public interface HeroService {
   boolean isSaboteurKilled(Long gameId);
 
   boolean isHeroAtPosition(Long gameId, Position position);
+
+  void deleteAllWhereGameId(Long gameId);
 }

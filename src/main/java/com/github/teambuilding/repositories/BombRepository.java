@@ -19,18 +19,20 @@ public class BombRepository {
 
   public List<Bomb> findByGameId(Long gameId) {
 
-    return entityManager.createQuery("SELECT b FROM Bomb b WHERE b.game.id = ?1", Bomb.class)
-        .setParameter(1, gameId).getResultList();
+    String jpql = "SELECT b FROM Bomb b WHERE b.game.id = ?1";
+    return entityManager.createQuery(jpql, Bomb.class).setParameter(1, gameId).getResultList();
   }
 
   public Bomb findByGameIdAndPosition(Long gameId, Position position) {
 
+    String jpql =
+        "SELECT b FROM Bomb b WHERE b.game.id = ?1 AND b.rowLocation = ?2 AND b.colLocation = ?3";
+
     try {
 
-      return entityManager.createQuery(
-          "SELECT b FROM Bomb b WHERE b.game.id = ?1 AND b.rowLocation = ?2 AND b.colLocation = ?3",
-          Bomb.class).setParameter(1, gameId).setParameter(2, (byte) position.getRow())
-          .setParameter(3, (byte) position.getCol()).getSingleResult();
+      return entityManager.createQuery(jpql, Bomb.class).setParameter(1, gameId)
+          .setParameter(2, (byte) position.getRow()).setParameter(3, (byte) position.getCol())
+          .getSingleResult();
     }
 
     catch (Exception e) {
@@ -49,5 +51,11 @@ public class BombRepository {
 
   public void delete(Bomb bomb) {
     entityManager.remove(entityManager.find(Bomb.class, bomb.getId()));
+  }
+
+  public void deleteWhereGameId(Long gameId) {
+
+    String jpql = "DELETE FROM Bomb b WHERE b.game.id = ?1";
+    entityManager.createQuery(jpql).setParameter(1, gameId).executeUpdate();
   }
 }

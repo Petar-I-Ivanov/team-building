@@ -63,6 +63,11 @@ public class BombServiceImpl implements BombService {
     }
   }
 
+  @Override
+  public void deleteAllWhereGameId(Long gameId) {
+    bombRepository.deleteWhereGameId(gameId);
+  }
+
   private void killAroundTheExplode(Bomb bomb, short turn) {
 
     int bombRow = bomb.getRowLocation();

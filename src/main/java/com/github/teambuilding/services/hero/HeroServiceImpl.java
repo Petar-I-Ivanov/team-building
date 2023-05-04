@@ -99,6 +99,11 @@ public class HeroServiceImpl implements HeroService {
     return heroRepository.findByGameIdAndPosition(gameId, position) != null;
   }
 
+  @Override
+  public void deleteAllWhereGameId(Long gameId) {
+    heroRepository.deleteWhereGameId(gameId);
+  }
+
   private void setExplode(Long gameId, short turn) {
 
     SaboteurHero saboteur =

@@ -2,6 +2,7 @@ package com.github.teambuilding.models;
 
 import com.github.teambuilding.models.building.Building;
 import com.github.teambuilding.models.hero.Hero;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.Column;
@@ -29,6 +30,8 @@ public class Game {
   @Enumerated(EnumType.STRING)
   private GameStatusEnum status;
 
+  private LocalDate date;
+
   @OneToMany(mappedBy = "game")
   private List<Building> buildings;
 
@@ -44,6 +47,7 @@ public class Game {
   public Game() {
     this.turn = 1;
     this.status = GameStatusEnum.ONGOING;
+    this.date = LocalDate.now();
     this.bombs = new ArrayList<>();
   }
 }

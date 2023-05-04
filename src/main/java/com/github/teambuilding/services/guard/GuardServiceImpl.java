@@ -59,7 +59,7 @@ public class GuardServiceImpl implements GuardService {
 
     guardMovementService.moveGuard(gameId);
 
-    if (isGuardSeeingHeroes(guard, gameId)) {
+    if (isGuardSeeingHeroes(gameId)) {
       guardSeeingHeroesAction(guard, gameId, turn);
     }
   }
@@ -74,13 +74,20 @@ public class GuardServiceImpl implements GuardService {
     return guardRepository.findByGameIdAndPosition(gameId, position) != null;
   }
 
-  private boolean isGuardSeeingHeroes(Guard guard, Long gameId) {
+  @Override
+  public void deleteAllWhereGameId(Long gameId) {
+    guardRepository.deleteWhereGameId(gameId);
+  }
+
+  private boolean isGuardSeeingHeroes(Long gameId) {
+
+    Guard guard = guardRepository.findByGameId(gameId);
 
     int guardRow = guard.getRowLocation();
     int guardCol = guard.getColLocation();
 
-    for (int row = guardRow - 1; row < guardRow + 1; row++) {
-      for (int col = guardCol - 1; col < guardCol + 1; col++) {
+    for (int row = guardRow - 1; row <= guardRow + 1; row++) {
+      for (int col = guardCol - 1; col <= guardCol + 1; col++) {
 
         if (heroService.isHeroAtPosition(gameId, new Position(row, col))) {
           return true;

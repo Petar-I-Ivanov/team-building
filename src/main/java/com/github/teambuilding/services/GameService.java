@@ -10,6 +10,7 @@ import com.github.teambuilding.services.guard.GuardServiceImpl;
 import com.github.teambuilding.services.hero.HeroServiceImpl;
 import com.github.teambuilding.utility.Constants;
 import com.github.teambuilding.utility.Position;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
@@ -65,12 +66,14 @@ public class GameService {
     heroService.makeAction(game.getId(), command, heroPick, game.getTurn());
     bombService.explodeCheck(game.getId(), game.getTurn());
     guardService.move(game.getId(), game.getTurn());
+
     game.setTurn((short) (game.getTurn() + 1));
 
     if (isGameWon(gameId) || isGameLost(gameId)) {
 
       GameStatusEnum newStatus = (isGameWon(gameId)) ? GameStatusEnum.WON : GameStatusEnum.LOST;
       game.setStatus(newStatus);
+      deleteGameboardObjects(gameId);
     }
 
     return gameRepository.save(game);
@@ -91,6 +94,13 @@ public class GameService {
     }
 
     return gameboard;
+  }
+
+  public void oldGameboardObjectsClean(LocalDate date) {
+
+    for (Game oldOngoingGame : gameRepository.findOngoingGamesBefore(date)) {
+      deleteGameboardObjects(oldOngoingGame.getId());
+    }
   }
 
   private boolean isGameWon(Long gameId) {
@@ -122,5 +132,13 @@ public class GameService {
     gameboardObjects.addAll(bombService.getAllForGameId(gameId));
 
     return gameboardObjects;
+  }
+
+  private void deleteGameboardObjects(Long gameId) {
+
+    buildingService.deleteAllWhereGameId(gameId);
+    heroService.deleteAllWhereGameId(gameId);
+    guardService.deleteAllWhereGameId(gameId);
+    bombService.deleteAllWhereGameId(gameId);
   }
 }

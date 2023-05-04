@@ -77,6 +77,11 @@ public class BuildingServiceImpl implements BuildingService {
     return buildings == null || buildings.isEmpty();
   }
 
+  @Override
+  public void deleteAllWhereGameId(Long gameId) {
+    buildingRepository.deleteWhereGameId(gameId);
+  }
+
   private Building getBuildingByPosition(Position position, Long gameId) {
     return buildingRepository.findByGameIdAndPosition(gameId, position);
   }

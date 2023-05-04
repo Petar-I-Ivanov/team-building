@@ -20,9 +20,9 @@ public class HeroRepository {
 
   public List<Hero> findByGameId(Long gameId) {
 
+    String jpql = "SELECT h FROM Hero h WHERE h.game.id = ?1";
     List<Hero> heroes =
-        entityManager.createQuery("SELECT h FROM Hero h WHERE h.game.id = ?1", Hero.class)
-            .setParameter(1, gameId).getResultList();
+        entityManager.createQuery(jpql, Hero.class).setParameter(1, gameId).getResultList();
 
     heroes.sort(Comparator.comparing(Hero::getOrderPosition));
     return heroes;
@@ -30,20 +30,20 @@ public class HeroRepository {
 
   public Hero findByGameIdAndOrderPositionOne(Long gameId) {
 
-    return entityManager
-        .createQuery("SELECT h FROM Hero h WHERE h.game.id = ?1 AND h.orderPosition = 1",
-            Hero.class)
-        .setParameter(1, gameId).getSingleResult();
+    String jpql = "SELECT h FROM Hero h WHERE h.game.id = ?1 AND h.orderPosition = 1";
+    return entityManager.createQuery(jpql, Hero.class).setParameter(1, gameId).getSingleResult();
   }
 
   public Hero findByGameIdAndPosition(Long gameId, Position position) {
 
+    String jpql =
+        "SELECT h FROM Hero h WHERE h.game.id = ?1 AND h.rowLocation = ?2 AND h.colLocation = ?3";
+
     try {
 
-      return entityManager.createQuery(
-          "SELECT h FROM Hero h WHERE h.game.id = ?1 AND h.rowLocation = ?2 AND h.colLocation = ?3",
-          Hero.class).setParameter(1, gameId).setParameter(2, (byte) position.getRow())
-          .setParameter(3, (byte) position.getCol()).getSingleResult();
+      return entityManager.createQuery(jpql, Hero.class).setParameter(1, gameId)
+          .setParameter(2, (byte) position.getRow()).setParameter(3, (byte) position.getCol())
+          .getSingleResult();
     }
 
     catch (Exception e) {
@@ -53,11 +53,12 @@ public class HeroRepository {
 
   public Hero findByGameIdAndSign(Long gameId, String sign) {
 
+    String jpql = "SELECT h FROM Hero h WHERE h.game.id = ?1 AND h.sign = ?2";
+
     try {
 
-      return entityManager
-          .createQuery("SELECT h FROM Hero h WHERE h.game.id = ?1 AND h.sign = ?2", Hero.class)
-          .setParameter(1, gameId).setParameter(2, sign).getSingleResult();
+      return entityManager.createQuery(jpql, Hero.class).setParameter(1, gameId)
+          .setParameter(2, sign).getSingleResult();
     }
 
     catch (Exception e) {
@@ -84,5 +85,11 @@ public class HeroRepository {
 
   public void delete(Hero hero) {
     entityManager.remove(entityManager.find(Hero.class, hero.getId()));
+  }
+
+  public void deleteWhereGameId(Long gameId) {
+
+    String jpql = "DELETE FROM Hero h WHERE h.game.id = ?1";
+    entityManager.createQuery(jpql).setParameter(1, gameId).executeUpdate();
   }
 }
