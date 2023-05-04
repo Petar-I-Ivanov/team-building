@@ -6,7 +6,7 @@ public class Constants {
   public static final String EMPTY_POSITION = "X";
   public static final String SMALL_BUILDING = "S";
   public static final String MEDIUM_BUILDING = "M";
-  public static final String BIG_BUILDING = "BB";
+  public static final String BIG_BUILDING = "L";
   public static final String TANK_HERO = "1";
   public static final String SNIPER_HERO = "2";
   public static final String SPY_HERO = "3";

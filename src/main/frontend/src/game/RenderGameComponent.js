@@ -3,7 +3,7 @@ import "./RenderGame.css";
 
 function RenderGameComponent({ game }) {
 
-  const imageNames = ['X', 'S', 'M', 'BB', 'G', 'B', '1', '2', '3', '4'];
+  const imageNames = ['X', 'S', 'M', 'L', 'G', 'B', '1', '2', '3', '4'];
   const images = imageNames.map(imageName => require('../assets/images/' + imageName + '.jpg'));
 
   return (
