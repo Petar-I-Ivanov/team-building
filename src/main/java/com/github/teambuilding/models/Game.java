@@ -32,6 +32,9 @@ public class Game {
 
   private LocalDate date;
 
+  @OneToOne(mappedBy = "game")
+  private Statistic statistic;
+
   @OneToMany(mappedBy = "game")
   private List<Building> buildings;
 

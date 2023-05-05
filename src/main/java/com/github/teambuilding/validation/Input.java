@@ -6,7 +6,7 @@ import lombok.Data;
 @ValidInput
 public class Input {
 
-	private String command;
-	private String heroPick;
-	private Long gameId;
+  private String command;
+  private String heroPick;
+  private String gameId;
 }

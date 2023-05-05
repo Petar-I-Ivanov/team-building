@@ -2,7 +2,7 @@ package com.github.teambuilding.api;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import com.github.teambuilding.dto.GameDto;
-import com.github.teambuilding.dto.MappingService;
+import com.github.teambuilding.dto.GameMappingService;
 import com.github.teambuilding.validation.Input;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
@@ -16,9 +16,9 @@ import javax.ws.rs.Produces;
 @Produces(APPLICATION_JSON)
 public class GameApi {
 
-  private MappingService mappingService;
+  private GameMappingService mappingService;
 
-  public GameApi(MappingService mappingService) {
+  public GameApi(GameMappingService mappingService) {
     this.mappingService = mappingService;
   }
 
@@ -30,7 +30,7 @@ public class GameApi {
   @PUT
   public GameDto makeAction(@Valid Input input) {
 
-    Long gameId = input.getGameId();
+    String gameId = input.getGameId();
     char command = input.getCommand().charAt(0);
     char heroPick = (input.getHeroPick() == null) ? '\0' : input.getHeroPick().charAt(0);
 

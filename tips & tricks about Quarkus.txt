@@ -1,0 +1,221 @@
+If you run your applications on Kubernetes, Quarkus is obviously a good choice. It starts fast and does not consume much memory. You may easily compile it natively with GraalVM. It provides a lot of useful developers features like e.g. hot reload. I hope you will find there tips and techniques that help to boost your productivity in Quarkus development. Or maybe just convince you to take a look at it, if don’t have any experience yet.
+
+Tip 1. Use Quarkus command-line tool
+How do you start a new application when using one of the popular Java frameworks? You can go to the online generator website, which is usually provided by those frameworks. Did you hear about Spring Initializr? Quarkus offers a similar site available at https://code.quarkus.io/. But what you may not know, there is also the Quarkus CLI tool. It allows you to create projects, manage extensions and execute build and dev commands. For example, you can create a source code for a new application using a single command as shown below:
+$ quarkus create app --package-name=pl.piomin.samples.quarkus \
+  -x resteasy-jackson,hibernate-orm-panache,jdbc-postgresql \
+  -o person-service \
+  pl.piomin.samples:person-service
+This command creates a simple REST application that uses the PostgreSQL database and Quarkus ORM layer. Also, it sets the name of the application, Maven groupId, and artifactId. After that, you can just run the application. To do that go to the generated directory and run the following command. Alternatively, you can execute the mvn quarkus:dev command. The application does not start successfully, since there is no database connection configured. Do we have to do that? No! Let’s proceed to the next section to see why.
+
+Tip 2. Use Dev Services with databases
+Did you hear about Testcontainers? It is a Java library that allows you to run containers automatically during JUnit tests. You can run common databases, Selenium web browsers, or anything else that can run in a Docker container. Quarkus provides built-in integration with Testcontainers when running applications in dev or test modes. This feature is called Dev Services. Moreover, you don’t have to do anything to enable it. Just DO NOT PROVIDE connection URL and credentials.
+
+Let’s back to our scenario. We have already created the application using Quarkus CLI. It contains all the required libraries. So, the only thing we need to do now is to run a Docker daemon. Thanks to that Quarkus will try to run PostgreSQL with Testcontainers in development mode. What’s the final result? Our application is working and it is connected with PostgreSQL started with Docker. Then, we may proceed to the development. With the quarkus dev command we have already enabled dev mode. Thanks to this, we may take advantage of the live reload feature.
+
+Tip 3. Use simplified ORM with Panache
+Let’s add some code to our sample application. We will implement a data layer using Quarkus Panache ORM. That’s a very interesting module that focuses on making your entities trivial and fun to write in Quarkus. Here’s our entity class. Thanks to the Quarkus field access rewrite, when you read person.name you will actually call your getName() accessor, and similarly for field writes and the setter. This allows for proper encapsulation at runtime as all fields calls will be replaced by the corresponding getter or setter calls. The PanacheEntity also takes care of the primary key implementation. In the next step, we are going to define the repository class. Since it implements the PanacheRepository interface, we only need to add our custom find methods.
+
+@ApplicationScoped
+public class PersonRepository implements PanacheRepository<Person> {
+
+    public List<Person> findByName(String name) {
+        return find("name", name).list();
+    }
+
+    public List<Person> findByAgeGreaterThan(int age) {
+        return find("age > ?1", age).list();
+    }
+}
+
+Also, let’s create the import.sql file in the src/main/resources directory. It loads SQL statements when Hibernate ORM starts.
+
+Tip 4. Unified configuration as option
+Assuming we don’t want to run a database on Docker, we should configure the connection in application.properties. By default, Quarkus provides 3 profiles: prod, test, dev. We can define properties for multiple profiles inside a single application.properties using the syntax  %{profile-name}.config.name. In our case, there is an H2 instance used in dev and test modes, and an external PostgreSQL instance in the prod mode.
+
+quarkus.datasource.db-kind=postgresql
+quarkus.datasource.username=${POSTGRES_USER}
+quarkus.datasource.password=${POSTGRES_PASSWORD}
+quarkus.datasource.jdbc.url=jdbc:postgresql://person-db:5432/${POSTGRES_DB}
+
+%test.quarkus.datasource.db-kind=h2
+%test.quarkus.datasource.username=sa
+%test.quarkus.datasource.password=password
+%test.quarkus.datasource.jdbc.url=jdbc:h2:mem:testdb
+
+%dev.quarkus.datasource.db-kind=h2
+%dev.quarkus.datasource.username=sa
+%dev.quarkus.datasource.password=password
+%dev.quarkus.datasource.jdbc.url=jdbc:h2:mem:testdb
+
+Tip 5. Deploy to Kubernetes with Maven
+Quarkus in a Kubernetes native framework. You may easily deploy your Quarkus application to the Kubernetes cluster without creating any YAML files manually. For more advanced configurations like e.g. mapping secrets to environment variables, you can use application.properties. Other things like e.g. health checks are detected in the source code. To enable this we need to include the quarkus-kubernetes module. There is also an implementation for OpenShift.
+
+<dependency>
+   <groupId>io.quarkus</groupId>
+   <artifactId>quarkus-openshift</artifactId>
+</dependency>
+
+After that, Quarkus will generate deployment manifests during the Maven build. We can enable automatic deployment to the current Kubernetes cluster by setting the property quarkus.kubernetes.deploy to true. For OpenShift deploy, we have to change the default deployment target from kubernetes to openshift.
+
+quarkus.container-image.build = true
+quarkus.kubernetes.deploy = true
+quarkus.kubernetes.deployment-target = openshift
+
+Let’s assume we have some custom configuration to set on the Deployment manifest. Our application will run in two pods and is automatically exposed outside the cluster. It also injects values from Secret in order to connect with the PostgreSQL database.
+
+quarkus.openshift.expose = true
+quarkus.openshift.replicas = 2
+quarkus.openshift.labels.app = person-app
+quarkus.openshift.annotations.app-type = demo
+quarkus.openshift.env.mapping.postgres_user.from-secret = person-db
+quarkus.openshift.env.mapping.postgres_user.with-key = database-user
+quarkus.openshift.env.mapping.postgres_password.from-secret = person-db
+quarkus.openshift.env.mapping.postgres_password.with-key = database-password
+quarkus.openshift.env.mapping.postgres_db.from-secret = person-db
+quarkus.openshift.env.mapping.postgres_db.with-key = database-name
+
+Tip 6. Access Dev UI console
+After running the Quarkus app in dev mode (mvn<em> </em>quarkus:dev) you can access the Dev UI console under the address http://localhost:8080/q/dev. The more modules you include the more options you can configure there. One of my favorite features here is the ability to deploy applications to OpenShift. Instead of running the Maven command for building an application, we can just run it in dev mode and deploy using graphical UI.
+
+Tip 7. Test continuously
+Quarkus supports continuous testing, where tests run immediately after code changes. This allows you to get instant feedback on your code changes. Quarkus detects which tests cover which code, and uses this information to only run the relevant tests when code is changed. After running the application in development you will be prompted to enable that feature as shown below. Just press r to enable it. Ok, so let’s add some tests for our sample application. Firstly, we need to include the Quarkus Test module and REST Assured library.
+
+<dependency>
+   <groupId>io.quarkus</groupId>
+   <artifactId>quarkus-junit5</artifactId>
+   <scope>test</scope>
+</dependency>
+<dependency>
+   <groupId>io.rest-assured</groupId>
+   <artifactId>rest-assured</artifactId>
+   <scope>test</scope>
+</dependency>
+
+Then we will add some simple API tests. The test class has to be annotated with @QuarkusTest. The rest of the implementation is typical for the REST Assured library.
+
+@QuarkusTest
+public class PersonResourceTests {
+
+    @Test
+    void getPersons() {
+        List<Person> persons = given().when().get("/persons")
+                .then()
+                .statusCode(200)
+                .extract()
+                .body()
+                .jsonPath().getList(".", Person.class);
+        assertEquals(persons.size(), 6);
+    }
+
+    @Test
+    void getPersonById() {
+        Person person = given()
+                .pathParam("id", 1)
+                .when().get("/persons/{id}")
+                .then()
+                .statusCode(200)
+                .extract()
+                .body().as(Person.class);
+        assertNotNull(person);
+        assertEquals(1L, person.id);
+    }
+}
+
+We can run those JUnit tests from the Dev UI console as well. Firstly, you should go to the Dev UI console. At the bottom of the page, you will find the panel responsible testing module. Just click the Test result icon.
+
+Tip 8. Compile natively with GraalVM on OpenShift
+You can easily build and run a native Quarkus GraalVM image on OpenShift using a single command and ubi-quarkus-native-s2i builder. OpenShift builds the application using the S2I (source-2-image) approach. Of course, you just need a running OpenShift cluster (e.g. local CRC or Developer Sandbox https://developers.redhat.com/products/codeready-containers/overview) and the oc client installed locally.
+
+Tip 9. Rollback transaction after each test
+If you need to roll back changes in the data after each test, avoid doing it manually. Instead, you just need to annotate your test class with @TestTransaction. Rollback is performed each time the test method is complete.
+
+@QuarkusTest
+@TestTransaction
+public class PersonRepositoryTests {
+
+    @Inject
+    PersonRepository personRepository;
+
+    @Test
+    void addPerson() {
+        Person newPerson = new Person();
+        newPerson.age = 22;
+        newPerson.name = "TestNew";
+        newPerson.gender = Gender.FEMALE;
+        personRepository.persist(newPerson);
+        Assertions.assertNotNull(newPerson.id);
+    }
+}
+
+Tip 10. Take advantage of GraphQL support
+That’s the last of Quarkus tips in this article. However, it is one of my favorite Quarkus features. GraphQL support is not a strong side of Spring Boot. On the other hand, Quarkus provides very cool and simple extensions for GraphQL for the client and server-side.
+
+Firstly, let’s add the Quarkus modules responsible for GraphQL support.
+
+<dependency>
+   <groupId>io.quarkus</groupId>
+   <artifactId>quarkus-smallrye-graphql</artifactId>
+</dependency>
+<dependency>
+   <groupId>io.quarkus</groupId>
+   <artifactId>quarkus-smallrye-graphql-client</artifactId>
+   <scope>test</scope>
+</dependency>
+
+Then we may create a code responsible for exposing GraphQL API. The class has to be annotated with @GraphQLAPI. Quarkus automatically generates GraphQL schema from the source code.
+
+@GraphQLApi
+public class EmployeeFetcher {
+
+    private EmployeeRepository repository;
+
+    public EmployeeFetcher(EmployeeRepository repository){
+        this.repository = repository;
+    }
+
+    @Query("employees")
+    public List<Employee> findAll() {
+        return repository.listAll();
+    }
+
+    @Query("employee")
+    public Employee findById(@Name("id") Long id) {
+        return repository.findById(id);
+    }
+
+    @Query("employeesWithFilter")
+    public List<Employee> findWithFilter(@Name("filter") EmployeeFilter filter) {
+        return repository.findByCriteria(filter);
+    }
+}
+
+Then, let’s create a client interface to call two endpoints. We need to annotate that interface with @GraphQLClientApi.
+
+@GraphQLClientApi(configKey = "employee-client")
+public interface EmployeeClient {
+
+    List<Employee> employees();
+    Employee employee(Long id);
+}
+
+Finally, we can add a simple JUnit test. We just need to inject EmployeeClient, and then call methods.
+
+@QuarkusTest
+public class EmployeeFetcherTests {
+
+    @Inject
+    EmployeeClient employeeClient;
+
+    @Test
+    void fetchAll() {
+        List<Employee> employees = employeeClient.employees();
+        Assertions.assertEquals(10, employees.size());
+    }
+
+    @Test
+    void fetchById() {
+        Employee employee = employeeClient.employee(10L);
+        Assertions.assertNotNull(employee);
+    }
+}

@@ -20,7 +20,6 @@ public class GuardRepository {
 
     String jpql = "SELECT g FROM Guard g WHERE g.game.id = ?1";
     return entityManager.createQuery(jpql, Guard.class).setParameter(1, gameId).getSingleResult();
-
   }
 
   public Guard findByGameIdAndPosition(Long gameId, Position position) {

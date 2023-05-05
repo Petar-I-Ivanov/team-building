@@ -19,16 +19,19 @@ import javax.enterprise.context.ApplicationScoped;
 public class GameService {
 
   private GameRepository gameRepository;
+  private StatisticService statisticService;
 
   private BuildingServiceImpl buildingService;
   private HeroServiceImpl heroService;
   private GuardServiceImpl guardService;
   private BombServiceImpl bombService;
 
-  public GameService(GameRepository gameRepository, BuildingServiceImpl buildingService,
-      HeroServiceImpl heroService, GuardServiceImpl guardService, BombServiceImpl bombService) {
+  public GameService(GameRepository gameRepository, StatisticService statisticService,
+      BuildingServiceImpl buildingService, HeroServiceImpl heroService,
+      GuardServiceImpl guardService, BombServiceImpl bombService) {
 
     this.gameRepository = gameRepository;
+    this.statisticService = statisticService;
 
     this.buildingService = buildingService;
     this.heroService = heroService;
@@ -45,6 +48,7 @@ public class GameService {
   public Game startNewGame() {
 
     Game game = gameRepository.save(new Game());
+    statisticService.addStatistic(game);
 
     buildingService.generateBuildings(game);
     heroService.generateHeroes(game);
@@ -136,6 +140,7 @@ public class GameService {
 
   private void deleteGameboardObjects(Long gameId) {
 
+    statisticService.updateStatistic(gameId);
     buildingService.deleteAllWhereGameId(gameId);
     heroService.deleteAllWhereGameId(gameId);
     guardService.deleteAllWhereGameId(gameId);

@@ -5,7 +5,7 @@ export default function IndexPage({game, setGame}) {
 
   const [error, setError] = useState(null);
 
-  const message = (game.id !== 0)
+  const message = (game.id !== "")
     ? "You " + game.status + "!"
     : "Welcome to TEAM BUILDING game!";
 

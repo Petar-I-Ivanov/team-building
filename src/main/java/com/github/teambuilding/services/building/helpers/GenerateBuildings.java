@@ -52,10 +52,27 @@ public class GenerateBuildings {
 
         Building temp = supplier.get();
         temp.setLocation((new Position(row, col)));
+
+        if (isBuildingMediumAndColIsntStartAndEnd(startingBuilding, col)) {
+          temp.setEntryPossible(false);
+        }
+
         building.add(temp);
       }
     }
 
     return building;
+  }
+
+  private static boolean isBuildingMediumAndColIsntStartAndEnd(Building building, int col) {
+
+    if (!building.getSign().equals(Constants.MEDIUM_BUILDING)) {
+      return false;
+    }
+
+    int startCol = building.getColLocation();
+    int endCol = startCol + building.getWIDTH() - 1;
+
+    return col != startCol && col != endCol;
   }
 }
