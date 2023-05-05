@@ -9,6 +9,7 @@ release.properties
 !**/src/main/**/target/
 !**/src/test/**/target/
 mvnw/
+build/
 
 # Eclipse
 .project
