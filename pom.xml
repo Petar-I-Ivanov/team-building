@@ -127,10 +127,14 @@
 			<plugin>
 				<groupId>com.github.eirslett</groupId>
 				<artifactId>frontend-maven-plugin</artifactId>
-				<version>1.6</version>
+				<version>1.11.0</version>
 				<configuration>
-					<workingDirectory>${project.basedir}/src/main/frontend</workingDirectory>
+					<nodeVersion>v18.15.0</nodeVersion>
 					<installDirectory>target</installDirectory>
+					<workingDirectory>src/main/frontend</workingDirectory>
+					<environmentVariables>
+						<BUILD_PATH>${basedir}/target/classes/META-INF/resources</BUILD_PATH>
+					</environmentVariables>
 				</configuration>
 				<executions>
 					<execution>
@@ -138,27 +142,20 @@
 						<goals>
 							<goal>install-node-and-npm</goal>
 						</goals>
-						<configuration>
-							<nodeVersion>v18.15.0</nodeVersion>
-							<npmVersion>9.6.5</npmVersion>
-						</configuration>
 					</execution>
 					<execution>
 						<id>npm install</id>
 						<goals>
 							<goal>npm</goal>
 						</goals>
-						<configuration>
-							<arguments>install</arguments>
-						</configuration>
 					</execution>
 					<execution>
-						<id>npm run build</id>
+						<id>react-scripts build</id>
 						<goals>
 							<goal>npm</goal>
 						</goals>
 						<configuration>
-							<arguments>run prod</arguments>
+							<arguments>run build</arguments>
 						</configuration>
 					</execution>
 				</executions>

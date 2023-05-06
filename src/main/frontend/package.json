@@ -16,8 +16,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "prod": "react-scripts build && move build ..\\resources\\META-INF\\resources"
+    "eject": "react-scripts eject"
   },
   "proxy": "http://localhost:8080/",
   "eslintConfig": {
